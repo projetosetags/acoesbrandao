@@ -475,26 +475,25 @@ box.innerHTML=tabela(['Data','Empresa','Código','Tipo','Qtd.','Preço','Valor b
 015 RENDERIZAR RESULTADO MENSAL
 =========================================================*/
 function renderMensal(){
-let rows=[...CALC.mensal].reverse().map(x=>`
-<tr>
-<td><b>${mesBR(x.mes+'-01')}</b></td>
-<td class="right">${brl(x.compras)}</td>
-<td class="right">${brl(x.vendas)}</td>
-<td class="right ${x.lucro>=0?'pos':'neg'}">${brl(x.lucro)}</td>
-<td class="right">${brl(x.taxas)}</td>
-<td class="right ${(x.lucro-x.taxas)>=0?'pos':'neg'}">${brl(x.lucro-x.taxas)}</td>
-</tr>
-`)
+let dados=[...CALC.mensal].sort((a,b)=>b.mes.localeCompare(a.mes))
+let rows=dados.map(x=>{
+let compras=Number(x.compras)||0
+let vendas=Number(x.vendas)||0
+let lucro=Number(x.lucro)||0
+let taxas=Number(x.taxas)||0
+let liquido=lucro-taxas
+return `<tr>
+<td class="resultado-mes"><b>${mesBR(x.mes+'-01')}</b></td>
+<td class="right resultado-valor">${brl(compras)}</td>
+<td class="right resultado-valor">${brl(vendas)}</td>
+<td class="right resultado-bruto ${lucro>=0?'pos':'neg'}">${brl(lucro)}</td>
+<td class="right resultado-taxas">${brl(taxas)}</td>
+<td class="right resultado-liquido ${liquido>=0?'pos':'neg'}">${brl(liquido)}</td>
+</tr>`
+})
 let box=document.getElementById('tabelaMensal')
 if(box){
-box.innerHTML=tabela([
-'Mês',
-'Compras',
-'Vendas',
-'Resultado bruto',
-'Taxas',
-'Resultado após taxas'
-],rows)
+box.innerHTML=tabela(['Mês','Compras','Vendas','Resultado Bruto','Taxas','Resultado Líquido'],rows)
 }
 }
 /*=========================================================
