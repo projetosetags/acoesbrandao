@@ -84,6 +84,8 @@ async function carregar(){
 
 avisar('Atualizando…')
 
+try{
+
 let [o,t,a]=await Promise.all([
 
 db
@@ -100,14 +102,15 @@ db
 db
 .from('nemesio_ativos')
 .select('*')
-.eq('ativo',true)
 .order('empresa',{ascending:true})
 
 ])
 
+/* OPERAÇÕES SÃO A BASE PRINCIPAL */
+
 if(o.error){
 
-console.error(o.error)
+console.error('Erro operações:',o.error)
 
 avisar('Erro ao carregar operações')
 
@@ -115,31 +118,104 @@ return
 
 }
 
+OPERACOES=o.data||[]
+
+/* TAXAS */
+
 if(t.error){
 
-console.error(t.error)
+console.warn('Erro taxas:',t.error)
 
-avisar('Erro ao carregar taxas')
+TAXAS=[]
 
-return
+}else{
+
+TAXAS=t.data||[]
 
 }
+
+/* ATIVOS */
 
 if(a.error){
 
-console.error(a.error)
+console.warn(
+'Tabela nemesio_ativos indisponível. Usando operações.',
+a.error
+)
 
-avisar('Erro ao carregar ativos')
+ATIVOS=[]
 
-return
+}else{
+
+ATIVOS=(a.data||[]).filter(x=>
+x.ativo===undefined||
+x.ativo===null||
+x.ativo===true
+)
 
 }
 
-OPERACOES=o.data||[]
-TAXAS=t.data||[]
-ATIVOS=a.data||[]
+/* =========================================================
+RECONSTRUIR ATIVOS PELAS OPERAÇÕES
+CASO A TABELA NÃO EXISTA OU ESTEJA VAZIA
+========================================================= */
+
+let mapa=new Map()
+
+ATIVOS.forEach(a=>{
+
+let empresa=String(a.empresa||'').trim()
+let codigo=String(a.codigo||'').trim().toUpperCase()
+
+if(!empresa||!codigo)return
+
+mapa.set(
+codigo,
+{
+...a,
+empresa,
+codigo
+}
+)
+
+})
+
+OPERACOES.forEach(o=>{
+
+let empresa=String(o.empresa||'').trim()
+let codigo=String(o.codigo||'').trim().toUpperCase()
+
+if(!empresa||!codigo)return
+
+if(!mapa.has(codigo)){
+
+mapa.set(
+codigo,
+{
+id:null,
+empresa,
+codigo,
+ativo:true
+}
+)
+
+}
+
+})
+
+ATIVOS=[...mapa.values()].sort(
+(a,b)=>
+a.empresa.localeCompare(
+b.empresa,
+'pt-BR'
+)
+)
+
+/* CALCULAR NOVAMENTE */
 
 CALC=calcular()
+
+/* RENDERIZAR */
 
 renderTudo()
 
@@ -154,8 +230,18 @@ minute:'2-digit'
 )
 )
 
+}catch(erro){
+
+console.error(
+'Erro geral ao carregar painel:',
+erro
+)
+
+avisar('Erro ao carregar painel')
+
 }
 
+}
 /*=========================================================
 003 CALCULAR CARTEIRA E RESULTADOS
 =========================================================*/
