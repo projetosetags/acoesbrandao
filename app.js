@@ -423,26 +423,19 @@ ${rows.length?rows.join(''):`<tr><td colspan="${headers.length}" style="text-ali
 013 RENDERIZAR CARTEIRA
 =========================================================*/
 function renderCarteira(){
-let rows=CALC.carteira.map(a=>`
-<tr>
-<td><b>${escaparHTML(a.empresa)}</b></td>
-<td><b>${escaparHTML(a.codigo)}</b></td>
-<td class="right">${num(a.qtd)}</td>
-<td class="right">${brl(a.custo)}</td>
-<td class="right">${brl(a.pm)}</td>
-<td class="right ${a.realizado>=0?'pos':'neg'}">${brl(a.realizado)}</td>
-<td class="right">${a.operacoes}</td>
-</tr>
-`)
-let html=tabela([
-'Empresa',
-'Código',
-'Qtd. atual',
-'Custo atual',
-'Preço médio',
-'Lucro/Prejuízo realizado',
-'Operações'
-],rows)
+let rows=CALC.carteira.map(a=>{
+let resultado=Number(a.realizado)||0
+return `<tr>
+<td class="carteira-empresa">${escaparHTML(a.empresa)}</td>
+<td class="carteira-codigo"><b>${escaparHTML(a.codigo)}</b></td>
+<td class="right carteira-qtd">${num(a.qtd)}</td>
+<td class="right carteira-valor">${brl(a.custo)}</td>
+<td class="right carteira-valor">${brl(a.pm)}</td>
+<td class="right carteira-resultado ${resultado>=0?'pos':'neg'}">${brl(resultado)}</td>
+<td class="right carteira-operacoes">${a.operacoes}</td>
+</tr>`
+})
+let html=tabela(['Empresa','Código','Qtd. Atual','Custo Atual','Preço Médio','Lucro/Prejuízo','Operações'],rows)
 let carteira=document.getElementById('tabelaCarteira')
 let resumo=document.getElementById('resumoPainel')
 if(carteira)carteira.innerHTML=html
