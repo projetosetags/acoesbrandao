@@ -65,6 +65,142 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .alert{padding:10px 12px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:12px;margin-bottom:12px}
 .right{text-align:right}
 .acoes-form{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+/*=========================================================
+TABELAS COMPACTAS - OPERAÇÕES E TAXAS
+=========================================================*/
+#tabelaOperacoes .tablewrap,
+#tabelaTaxas .tablewrap{
+max-height:650px
+}
+#tabelaOperacoes table,
+#tabelaTaxas table{
+font-size:12px
+}
+#tabelaOperacoes th,
+#tabelaTaxas th{
+padding:7px 9px;
+height:32px;
+font-size:11px;
+line-height:1.15
+}
+#tabelaOperacoes td,
+#tabelaTaxas td{
+padding:5px 9px;
+height:34px;
+line-height:1.15;
+vertical-align:middle
+}
+#tabelaOperacoes tbody tr:hover,
+#tabelaTaxas tbody tr:hover{
+background:#f8fafc
+}
+.btn-excluir-mini{
+border:0;
+border-radius:6px;
+padding:4px 8px;
+min-height:25px;
+height:25px;
+background:#fee2e2;
+color:#b91c1c;
+font-size:10px;
+font-weight:800;
+line-height:1;
+cursor:pointer
+}
+.btn-excluir-mini:hover{
+background:#fecaca;
+color:#991b1b
+}
+#tabelaOperacoes .tag{
+padding:3px 7px;
+font-size:10px
+}
+#tabelaOperacoes td:last-child,
+#tabelaTaxas td:last-child{
+width:62px;
+text-align:center
+}
+/*=========================================================
+PAINEL TAXAS - TABELA COMPACTA
+=========================================================*/
+#tabelaTaxas table{
+width:100%;
+table-layout:fixed;
+font-size:12px
+}
+#tabelaTaxas th{
+padding:7px 10px;
+height:32px;
+font-size:11px;
+vertical-align:middle
+}
+#tabelaTaxas td{
+padding:5px 10px;
+height:34px;
+vertical-align:middle
+}
+#tabelaTaxas th:nth-child(1),
+#tabelaTaxas td:nth-child(1){
+width:16%;
+text-align:left
+}
+#tabelaTaxas th:nth-child(2),
+#tabelaTaxas td:nth-child(2){
+width:18%;
+text-align:right
+}
+#tabelaTaxas th:nth-child(3),
+#tabelaTaxas td:nth-child(3){
+width:18%;
+text-align:right
+}
+#tabelaTaxas th:nth-child(4),
+#tabelaTaxas td:nth-child(4){
+width:20%;
+text-align:right
+}
+#tabelaTaxas th:nth-child(5),
+#tabelaTaxas td:nth-child(5){
+width:18%;
+text-align:right
+}
+#tabelaTaxas th:nth-child(6),
+#tabelaTaxas td:nth-child(6){
+width:10%;
+text-align:center
+}
+#tabelaTaxas tbody tr:hover{
+background:#f8fafc
+}
+#tabelaTaxas th:nth-child(4),
+#tabelaTaxas td:nth-child(4){
+background:#f8fafc
+}
+#tabelaTaxas td:nth-child(4){
+font-weight:800;
+color:#0f172a
+}
+.irrf-valor{
+font-weight:700;
+color:#64748b
+}
+.btn-excluir-mini{
+border:0;
+border-radius:6px;
+padding:4px 8px;
+height:25px;
+min-height:25px;
+background:#fee2e2;
+color:#b91c1c;
+font-size:10px;
+font-weight:800;
+line-height:1;
+cursor:pointer
+}
+.btn-excluir-mini:hover{
+background:#fecaca;
+color:#991b1b
+}
 @media(max-width:1100px){
 .kpis{grid-template-columns:repeat(3,1fr)}
 .grid2{grid-template-columns:1fr}
