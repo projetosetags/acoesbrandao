@@ -201,6 +201,125 @@ cursor:pointer
 background:#fecaca;
 color:#991b1b
 }
+/*=========================================================
+PAINEL CARTEIRA - COLUNAS ORGANIZADAS
+=========================================================*/
+#tabelaCarteira .tablewrap,
+#resumoPainel .tablewrap{
+width:100%;
+overflow-x:auto
+}
+#tabelaCarteira table,
+#resumoPainel table{
+width:100%;
+table-layout:fixed;
+border-collapse:collapse;
+font-size:12px
+}
+#tabelaCarteira th,
+#resumoPainel th{
+height:36px;
+padding:8px 10px;
+background:#f8fafc;
+color:#475569;
+font-size:11px;
+font-weight:800;
+vertical-align:middle;
+border-bottom:1px solid #cbd5e1
+}
+#tabelaCarteira td,
+#resumoPainel td{
+height:36px;
+padding:6px 10px;
+vertical-align:middle;
+border-bottom:1px solid #eef2f7
+}
+#tabelaCarteira tbody tr:hover,
+#resumoPainel tbody tr:hover{
+background:#f8fafc
+}
+/* EMPRESA */
+#tabelaCarteira th:nth-child(1),
+#tabelaCarteira td:nth-child(1),
+#resumoPainel th:nth-child(1),
+#resumoPainel td:nth-child(1){
+width:25%;
+text-align:left
+}
+/* CÓDIGO */
+#tabelaCarteira th:nth-child(2),
+#tabelaCarteira td:nth-child(2),
+#resumoPainel th:nth-child(2),
+#resumoPainel td:nth-child(2){
+width:10%;
+text-align:left
+}
+/* QUANTIDADE */
+#tabelaCarteira th:nth-child(3),
+#tabelaCarteira td:nth-child(3),
+#resumoPainel th:nth-child(3),
+#resumoPainel td:nth-child(3){
+width:11%;
+text-align:right
+}
+/* CUSTO ATUAL */
+#tabelaCarteira th:nth-child(4),
+#tabelaCarteira td:nth-child(4),
+#resumoPainel th:nth-child(4),
+#resumoPainel td:nth-child(4){
+width:15%;
+text-align:right
+}
+/* PREÇO MÉDIO */
+#tabelaCarteira th:nth-child(5),
+#tabelaCarteira td:nth-child(5),
+#resumoPainel th:nth-child(5),
+#resumoPainel td:nth-child(5){
+width:14%;
+text-align:right
+}
+/* LUCRO/PREJUÍZO */
+#tabelaCarteira th:nth-child(6),
+#tabelaCarteira td:nth-child(6),
+#resumoPainel th:nth-child(6),
+#resumoPainel td:nth-child(6){
+width:16%;
+text-align:right
+}
+/* OPERAÇÕES */
+#tabelaCarteira th:nth-child(7),
+#tabelaCarteira td:nth-child(7),
+#resumoPainel th:nth-child(7),
+#resumoPainel td:nth-child(7){
+width:9%;
+text-align:right
+}
+.carteira-empresa{
+font-weight:600;
+color:#334155;
+overflow:hidden;
+text-overflow:ellipsis
+}
+.carteira-codigo{
+color:#0f172a
+}
+.carteira-qtd{
+font-variant-numeric:tabular-nums
+}
+.carteira-valor{
+font-variant-numeric:tabular-nums;
+white-space:nowrap
+}
+.carteira-resultado{
+font-weight:800;
+font-variant-numeric:tabular-nums;
+white-space:nowrap
+}
+.carteira-operacoes{
+font-weight:700;
+color:#64748b;
+font-variant-numeric:tabular-nums
+}
 @media(max-width:1100px){
 .kpis{grid-template-columns:repeat(3,1fr)}
 .grid2{grid-template-columns:1fr}
