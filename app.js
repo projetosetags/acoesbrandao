@@ -555,420 +555,245 @@ box.innerHTML=tabela([
 =========================================================*/
 function renderGraficos(){
 if(typeof Chart==='undefined'||!CALC)return
-
 let grafResultado=document.getElementById('grafResultado')
 let grafCarteira=document.getElementById('grafCarteira')
-
-/* =========================================================
+/*=========================================================
 GRÁFICO RESULTADO MENSAL
-========================================================= */
-
-let labels=CALC.mensal.map(
-x=>mesBR(x.mes+'-01')
-)
-
-let lucros=CALC.mensal.map(
-x=>x.lucro-x.taxas
-)
-
+=========================================================*/
+let labels=CALC.mensal.map(x=>mesBR(x.mes+'-01'))
+let lucros=CALC.mensal.map(x=>x.lucro-x.taxas)
 if(CHART1){
 CHART1.destroy()
 CHART1=null
 }
-
 if(grafResultado){
-
-CHART1=new Chart(
-grafResultado,
-{
+CHART1=new Chart(grafResultado,{
 type:'bar',
-
 data:{
 labels:labels,
-datasets:[
-{
+datasets:[{
 label:'Resultado após taxas',
 data:lucros
-}
-]
+}]
 },
-
 options:{
 responsive:true,
 maintainAspectRatio:false,
-
 plugins:{
 legend:{
 display:false
 },
-
 tooltip:{
+backgroundColor:'#0f172a',
+titleColor:'#ffffff',
+bodyColor:'#ffffff',
+padding:12,
+cornerRadius:8,
 callbacks:{
 label:ctx=>brl(ctx.raw)
 }
 },
-
 datalabels:{
 display:false
 }
 },
-
 scales:{
-y:{
+x:{
+grid:{
+display:false
+},
 ticks:{
-callback:v=>
-'R$ '+Number(v).toLocaleString('pt-BR')
+color:'#64748b',
+font:{
+size:11,
+weight:'600'
+}
+}
+},
+y:{
+beginAtZero:true,
+grid:{
+color:'rgba(148,163,184,.15)'
+},
+ticks:{
+color:'#64748b',
+callback:v=>'R$ '+Number(v).toLocaleString('pt-BR')
 }
 }
 }
 }
+})
 }
-)
-
-}
-
-/* =========================================================
+/*=========================================================
 GRÁFICO ROSCA - CAPITAL INVESTIDO
-========================================================= */
-
-let ativos=CALC.carteira.filter(
-x=>Number(x.custo)>0
-)
-
+=========================================================*/
+let ativos=CALC.carteira.filter(x=>Number(x.custo)>0).sort((a,b)=>Number(b.custo)-Number(a.custo))
 if(CHART2){
 CHART2.destroy()
 CHART2=null
 }
-
 if(!grafCarteira)return
-
 if(!ativos.length){
-
 let contexto=grafCarteira.getContext('2d')
-
-contexto.clearRect(
-0,
-0,
-grafCarteira.width,
-grafCarteira.height
-)
-
+contexto.clearRect(0,0,grafCarteira.width,grafCarteira.height)
 return
-
 }
-
-/* TOTAL INVESTIDO */
-
-let totalInvestido=
-ativos.reduce(
-(total,ativo)=>
-total+(Number(ativo.custo)||0),
-0
-)
-
-/* LABELS */
-
-let labelsAtivos=
-ativos.map(
-ativo=>ativo.codigo
-)
-
-/* VALORES */
-
-let valoresAtivos=
-ativos.map(
-ativo=>Number(ativo.custo)||0
-)
-
-/* =========================================================
-CRIAR ROSCA
-========================================================= */
-
-CHART2=new Chart(
-grafCarteira,
-{
-
-type:'doughnut',
-
-data:{
-
-labels:labelsAtivos,
-
-datasets:[
-{
-data:valoresAtivos,
-borderWidth:2,
-borderColor:'#ffffff',
-hoverOffset:10
-}
+/*=========================================================
+TOTAL INVESTIDO
+=========================================================*/
+let totalInvestido=ativos.reduce((total,ativo)=>total+(Number(ativo.custo)||0),0)
+/*=========================================================
+LABELS E VALORES
+=========================================================*/
+let labelsAtivos=ativos.map(ativo=>ativo.codigo)
+let valoresAtivos=ativos.map(ativo=>Number(ativo.custo)||0)
+/*=========================================================
+CORES
+=========================================================*/
+let coresAtivos=[
+'#2563eb',
+'#0f766e',
+'#7c3aed',
+'#ea580c',
+'#0891b2',
+'#65a30d',
+'#db2777',
+'#ca8a04',
+'#475569',
+'#9333ea',
+'#0284c7',
+'#16a34a',
+'#e11d48',
+'#4f46e5',
+'#059669',
+'#d97706'
 ]
-
+/*=========================================================
+CRIAR GRÁFICO DE ROSCA
+=========================================================*/
+CHART2=new Chart(grafCarteira,{
+type:'doughnut',
+data:{
+labels:labelsAtivos,
+datasets:[{
+data:valoresAtivos,
+backgroundColor:ativos.map((ativo,i)=>coresAtivos[i%coresAtivos.length]),
+borderColor:'#ffffff',
+borderWidth:3,
+hoverBorderWidth:3,
+hoverOffset:7
+}]
 },
-
 plugins:[
-typeof ChartDataLabels!=='undefined'
-?ChartDataLabels
-:{}
+typeof ChartDataLabels!=='undefined'?ChartDataLabels:{}
 ],
-
 options:{
-
 responsive:true,
-
 maintainAspectRatio:false,
-
-cutout:'52%',
-
+cutout:'62%',
 layout:{
-padding:25
+padding:{
+top:15,
+right:10,
+bottom:15,
+left:10
+}
 },
-
 plugins:{
-
-/* =========================================================
+/*=========================================================
 LEGENDA
-========================================================= */
-
+=========================================================*/
 legend:{
-
+display:true,
 position:'right',
-
+align:'center',
 labels:{
-
 usePointStyle:true,
-
 pointStyle:'circle',
-
-padding:16,
-
+boxWidth:9,
+boxHeight:9,
+padding:14,
+color:'#334155',
 font:{
 size:12,
-weight:'bold'
+weight:'600'
 },
-
 generateLabels:function(chart){
-
-let dataset=
-chart.data.datasets[0]
-
-return chart.data.labels.map(
-(label,i)=>{
-
-let valor=
-Number(dataset.data[i])||0
-
-let percentual=
-totalInvestido>0
-?(valor/totalInvestido)*100
-:0
-
-let meta=
-chart.getDatasetMeta(0)
-
-let estilo=
-meta.controller.getStyle(i)
-
+let dataset=chart.data.datasets[0]
+return chart.data.labels.map((label,i)=>{
+let valor=Number(dataset.data[i])||0
+let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
+let meta=chart.getDatasetMeta(0)
+let estilo=meta.controller.getStyle(i)
 return{
-
-text:
-label+
-' • '+
-percentual.toLocaleString(
-'pt-BR',
-{
-minimumFractionDigits:1,
-maximumFractionDigits:1
-}
-)+
-'%',
-
-fillStyle:
-estilo.backgroundColor,
-
-strokeStyle:
-estilo.borderColor,
-
-lineWidth:
-estilo.borderWidth,
-
-hidden:
-!chart.getDataVisibility(i),
-
+text:label+'   '+percentual.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%',
+fillStyle:estilo.backgroundColor,
+strokeStyle:estilo.backgroundColor,
+lineWidth:0,
+fontColor:'#334155',
+hidden:!chart.getDataVisibility(i),
 index:i
-
 }
-
+})
 }
-)
-
 }
-
-}
-
 },
-
-/* =========================================================
+/*=========================================================
 TOOLTIP
-========================================================= */
-
+=========================================================*/
 tooltip:{
-
+backgroundColor:'#0f172a',
+titleColor:'#ffffff',
+bodyColor:'#ffffff',
+padding:12,
+cornerRadius:8,
+displayColors:true,
 callbacks:{
-
 title:function(context){
-
-let indice=
-context[0].dataIndex
-
-let ativo=
-ativos[indice]
-
-return(
-ativo.codigo+
-' • '+
-ativo.empresa
-)
-
+let indice=context[0].dataIndex
+let ativo=ativos[indice]
+return ativo.codigo+' • '+ativo.empresa
 },
-
 label:function(context){
-
-let valor=
-Number(context.raw)||0
-
-let percentual=
-totalInvestido>0
-?(valor/totalInvestido)*100
-:0
-
-return(
-brl(valor)+
-' • '+
-percentual.toLocaleString(
-'pt-BR',
-{
-minimumFractionDigits:1,
-maximumFractionDigits:1
+let valor=Number(context.raw)||0
+let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
+return brl(valor)+' • '+percentual.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'
 }
-)+
-'%'
-)
-
 }
-
-}
-
 },
-
-/* =========================================================
-NOMES E PERCENTUAIS NAS FATIAS
-========================================================= */
-
+/*=========================================================
+RÓTULOS NAS FATIAS
+=========================================================*/
 datalabels:{
-
 display:function(context){
-
-let valor=
-Number(
-context.dataset.data[
-context.dataIndex
-]
-)||0
-
-if(totalInvestido<=0){
-return false
-}
-
-let percentual=
-(valor/totalInvestido)*100
-
-/*
-Evita poluição visual em fatias
-extremamente pequenas.
-A legenda continua mostrando todas.
-*/
-
-return percentual>=2
-
+let valor=Number(context.dataset.data[context.dataIndex])||0
+if(totalInvestido<=0)return false
+let percentual=(valor/totalInvestido)*100
+return percentual>=5
 },
-
 formatter:function(valor,context){
-
-let percentual=
-totalInvestido>0
-?(Number(valor)/totalInvestido)*100
-:0
-
-let codigo=
-context.chart.data.labels[
-context.dataIndex
-]
-
-return(
-codigo+
-'\n'+
-percentual.toLocaleString(
-'pt-BR',
-{
-minimumFractionDigits:1,
-maximumFractionDigits:1
-}
-)+
-'%'
-)
-
+let percentual=totalInvestido>0?(Number(valor)/totalInvestido)*100:0
+let codigo=context.chart.data.labels[context.dataIndex]
+return codigo+'\n'+percentual.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'
 },
-
 color:'#ffffff',
-
 textAlign:'center',
-
 anchor:'center',
-
 align:'center',
-
 clamp:true,
-
 font:function(context){
-
-let valor=
-Number(
-context.dataset.data[
-context.dataIndex
-]
-)||0
-
-let percentual=
-totalInvestido>0
-?(valor/totalInvestido)*100
-:0
-
+let valor=Number(context.dataset.data[context.dataIndex])||0
+let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
 return{
-
-weight:'bold',
-
-size:
-percentual>=10
-?13
-:11
-
+weight:'700',
+size:percentual>=15?12:11
 }
-
 },
-
-textStrokeColor:'rgba(15,23,42,.55)',
-
-textStrokeWidth:3
-
+textStrokeWidth:0
 }
-
 }
-
 }
-
-}
-)
-
+})
 }
 /*=========================================================
 018 SALVAR OPERAÇÃO
