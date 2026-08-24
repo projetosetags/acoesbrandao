@@ -464,31 +464,20 @@ return(!q||texto.includes(q))&&(!tp||o.tipo===tp)
 }).sort((a,b)=>String(b.data||'').localeCompare(String(a.data||''))||Number(b.id||0)-Number(a.id||0))
 let rows=dados.map(o=>{
 let valor=Number(o.valor_bruto)||((Number(o.quantidade)||0)*(Number(o.preco_unitario)||0))
-return `
-<tr>
+return `<tr>
 <td>${dataBR(o.data)}</td>
 <td>${escaparHTML(o.empresa)}</td>
 <td><b>${escaparHTML(o.codigo)}</b></td>
 <td><span class="tag ${String(o.tipo||'').toLowerCase()}">${escaparHTML(o.tipo)}</span></td>
 <td class="right">${num(o.quantidade)}</td>
 <td class="right">${brl(o.preco_unitario)}</td>
-<td class="right">${brl(valor)}</td>
-<td><button class="btn danger" type="button" onclick="excluirOperacao(${Number(o.id)})">Excluir</button></td>
-</tr>
-`
+<td class="right"><b>${brl(valor)}</b></td>
+<td><button class="btn-excluir-mini" type="button" onclick="excluirOperacao(${Number(o.id)})" title="Excluir operação">Excluir</button></td>
+</tr>`
 })
 let box=document.getElementById('tabelaOperacoes')
 if(box){
-box.innerHTML=tabela([
-'Data',
-'Empresa',
-'Código',
-'Tipo',
-'Qtd.',
-'Preço',
-'Valor bruto',
-''
-],rows)
+box.innerHTML=tabela(['Data','Empresa','Código','Tipo','Qtd.','Preço','Valor bruto',''],rows)
 }
 }
 /*=========================================================
@@ -522,32 +511,26 @@ box.innerHTML=tabela([
 =========================================================*/
 function renderTaxas(){
 let rows=[...TAXAS].reverse().map(t=>{
-let total=Number(t.taxas_operacionais)||(
-(Number(t.taxa_liquidacao)||0)+
-(Number(t.taxa_negociacao)||0)+
-(Number(t.irrf)||0)
-)
-return `
-<tr>
+let liquidacao=Number(t.taxa_liquidacao)||0
+let negociacao=Number(t.taxa_negociacao)||0
+let irrf=Number(t.irrf)||0
+let demais=Number(t.outras_taxas)||0
+let taxasSemIRRF=liquidacao+negociacao+demais
+let totalGeral=taxasSemIRRF+irrf
+return `<tr>
 <td>${dataBR(t.data)}</td>
-<td class="right">${brl(t.taxa_liquidacao)}</td>
-<td class="right">${brl(t.taxa_negociacao)}</td>
-<td class="right">${brl(t.irrf)}</td>
-<td class="right"><b>${brl(total)}</b></td>
-<td><button class="btn danger" type="button" onclick="excluirTaxa(${Number(t.id)})">Excluir</button></td>
-</tr>
-`
+<td class="right">${brl(liquidacao)}</td>
+<td class="right">${brl(negociacao)}</td>
+<td class="right">${brl(demais)}</td>
+<td class="right"><b>${brl(irrf)}</b></td>
+<td class="right"><b>${brl(taxasSemIRRF)}</b></td>
+<td class="right"><b>${brl(totalGeral)}</b></td>
+<td><button class="btn-excluir-mini" type="button" onclick="excluirTaxa(${Number(t.id)})" title="Excluir taxas">Excluir</button></td>
+</tr>`
 })
 let box=document.getElementById('tabelaTaxas')
 if(box){
-box.innerHTML=tabela([
-'Data',
-'Liquidação',
-'Negociação',
-'IRRF',
-'Total',
-''
-],rows)
+box.innerHTML=tabela(['Data','Liquidação','Negociação','Demais taxas','IRRF','Total taxas','Total geral',''],rows)
 }
 }
 /*=========================================================
