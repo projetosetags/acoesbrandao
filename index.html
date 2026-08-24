@@ -2,898 +2,285 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5,user-scalable=yes">
 <meta name="theme-color" content="#0f172a">
 <title>Nemésio G Brandão | Controle de Ações</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-
 <style>
-*{
-box-sizing:border-box
-}
-
-body{
-margin:0;
-font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
-background:#f1f5f9;
-color:#0f172a
-}
-
-.topo{
-background:#0f172a;
-color:white;
-padding:22px 28px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:20px
-}
-
-.topo h1{
-margin:0;
-font-size:22px
-}
-
-.topo p{
-margin:4px 0 0;
-color:#94a3b8;
-font-size:13px
-}
-
-.status{
-font-size:12px;
-background:#1e293b;
-padding:8px 12px;
-border-radius:999px;
-white-space:nowrap
-}
-
-.nav{
-background:white;
-border-bottom:1px solid #e2e8f0;
-padding:0 24px;
-display:flex;
-gap:6px;
-overflow:auto;
-position:sticky;
-top:0;
-z-index:10
-}
-
-.nav button{
-border:0;
-background:transparent;
-padding:15px 16px;
-font-weight:700;
-color:#64748b;
-cursor:pointer;
-border-bottom:3px solid transparent;
-white-space:nowrap
-}
-
-.nav button.ativo{
-color:#0f172a;
-border-color:#2563eb
-}
-
-.wrap{
-max-width:1500px;
-margin:auto;
-padding:22px
-}
-
-.aba{
-display:none
-}
-
-.aba.ativa{
-display:block
-}
-
-.kpis{
-display:grid;
-grid-template-columns:repeat(6,minmax(150px,1fr));
-gap:12px
-}
-
-.kpi,
-.card{
-background:white;
-border:1px solid #e2e8f0;
-border-radius:16px;
-box-shadow:0 4px 18px #0f172a0d
-}
-
-.kpi{
-padding:18px
-}
-
-.kpi small{
-color:#64748b;
-font-weight:700
-}
-
-.kpi b{
-display:block;
-font-size:23px;
-margin-top:7px
-}
-
-.grid2{
-display:grid;
-grid-template-columns:1.1fr .9fr;
-gap:14px;
-margin-top:14px
-}
-
-.card{
-padding:18px
-}
-
-.card h3{
-margin:0 0 14px;
-font-size:15px
-}
-
-.chartbox{
-height:310px
-}
-
-.toolbar{
-display:flex;
-gap:9px;
-flex-wrap:wrap;
-margin-bottom:12px
-}
-
-.toolbar input,
-.toolbar select,
-.form input,
-.form select{
-width:100%;
-min-height:42px;
-border:1px solid #cbd5e1;
-border-radius:10px;
-padding:10px 12px;
-background:white;
-color:#0f172a;
-font-family:inherit;
-font-size:13px;
-outline:none;
-transition:border-color .15s,box-shadow .15s
-}
-
-.toolbar input:focus,
-.toolbar select:focus,
-.form input:focus,
-.form select:focus{
-border-color:#2563eb;
-box-shadow:0 0 0 3px #2563eb1a
-}
-
-#opEmpresa,
-#opCodigo{
-cursor:pointer;
-font-weight:700;
-background-color:#fff
-}
-
-#opEmpresa:hover,
-#opCodigo:hover{
-border-color:#94a3b8
-}
-
-#opEmpresa option,
-#opCodigo option{
-font-weight:500;
-color:#0f172a;
-background:#fff
-}
-
-#opEmpresa option[value="__NOVO__"],
-#opCodigo option[value="__NOVO__"]{
-font-weight:800;
-color:#2563eb
-}
-
-.btn{
-border:0;
-border-radius:10px;
-padding:10px 14px;
-background:#2563eb;
-color:white;
-font-weight:800;
-cursor:pointer;
-min-height:42px;
-transition:filter .15s,transform .1s
-}
-
-.btn:hover{
-filter:brightness(.95)
-}
-
-.btn:active{
-transform:translateY(1px)
-}
-
-.btn.sec{
-background:#e2e8f0;
-color:#0f172a
-}
-
-.btn.danger{
-background:#dc2626
-}
-
-.tablewrap{
-overflow:auto;
-max-height:650px
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-font-size:13px
-}
-
-th{
-position:sticky;
-top:0;
-background:#f8fafc;
-text-align:left;
-color:#475569;
-padding:11px;
-border-bottom:1px solid #e2e8f0;
-white-space:nowrap
-}
-
-td{
-padding:10px 11px;
-border-bottom:1px solid #f1f5f9;
-white-space:nowrap
-}
-
-.pos{
-color:#15803d;
-font-weight:800
-}
-
-.neg{
-color:#dc2626;
-font-weight:800
-}
-
-.tag{
-padding:4px 8px;
-border-radius:999px;
-font-size:11px;
-font-weight:800
-}
-
-.compra{
-background:#dcfce7;
-color:#166534
-}
-
-.venda{
-background:#fee2e2;
-color:#991b1b
-}
-
-.form{
-display:grid;
-grid-template-columns:repeat(6,minmax(0,1fr));
-gap:10px;
-align-items:end
-}
-
-.form label{
-font-size:11px;
-font-weight:800;
-color:#64748b;
-display:flex;
-flex-direction:column;
-gap:5px;
-min-width:0
-}
-
-.form .acoes{
-display:flex;
-gap:8px
-}
-
-.muted{
-color:#64748b;
-font-size:12px
-}
-
-.alert{
-padding:10px 12px;
-border-radius:10px;
-background:#eff6ff;
-color:#1d4ed8;
-font-size:12px;
-margin-bottom:12px
-}
-
-.right{
-text-align:right
-}
-
-/* =========================================================
-PRIVACIDADE DOS VALORES
-========================================================= */
-
-.kpi-topo{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:8px
-}
-
-.btn-olho{
-width:32px;
-height:32px;
-min-width:32px;
-border:0;
-border-radius:8px;
-background:#f1f5f9;
-color:#475569;
-display:flex;
-align-items:center;
-justify-content:center;
-cursor:pointer;
-font-size:15px;
-padding:0;
-transition:.15s
-}
-
-.btn-olho:hover{
-background:#e2e8f0
-}
-
-.btn-olho:active{
-transform:scale(.96)
-}
-
-.valor-sensivel{
-letter-spacing:1px
-}
-
-.valores-ocultos{
-color:#64748b!important
-}
-
-  
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f1f5f9;color:#0f172a}
+button,input,select{font:inherit}
+.topo{background:#0f172a;color:#fff;padding:22px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.topo h1{margin:0;font-size:22px}
+.topo p{margin:4px 0 0;color:#94a3b8;font-size:13px}
+.status{font-size:12px;background:#1e293b;padding:8px 12px;border-radius:999px;white-space:nowrap}
+.nav{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 24px;display:flex;gap:6px;overflow:auto;position:sticky;top:0;z-index:10}
+.nav button{border:0;background:transparent;padding:15px 16px;font-weight:700;color:#64748b;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.nav button.ativo{color:#0f172a;border-color:#2563eb}
+.wrap{max-width:1500px;margin:auto;padding:22px}
+.aba{display:none}
+.aba.ativa{display:block}
+.kpis{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:12px}
+.kpi,.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 4px 18px #0f172a0d}
+.kpi{padding:18px;min-width:0}
+.kpi small{color:#64748b;font-weight:700;font-size:11px}
+.kpi b{display:block;font-size:23px;margin-top:7px;overflow:hidden;text-overflow:ellipsis}
+.kpi-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}
+.card{padding:18px}
+.card h3{margin:0 0 14px;font-size:15px}
+.chartbox{height:310px;position:relative}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar input,.toolbar select,.form input,.form select{width:100%;min-height:42px;border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;background:#fff;color:#0f172a;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s}
+.toolbar input:focus,.toolbar select:focus,.form input:focus,.form select:focus{border-color:#2563eb;box-shadow:0 0 0 3px #2563eb1a}
+#opEmpresa,#opCodigo{cursor:pointer;font-weight:700}
+#opEmpresa:hover,#opCodigo:hover{border-color:#94a3b8}
+#opEmpresa option,#opCodigo option{font-weight:500;color:#0f172a;background:#fff}
+#opEmpresa option[value="__NOVO__"],#opCodigo option[value="__NOVO__"]{font-weight:800;color:#2563eb}
+.btn{border:0;border-radius:10px;padding:10px 14px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer;min-height:42px;transition:filter .15s,transform .1s}
+.btn:hover{filter:brightness(.95)}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:#e2e8f0;color:#0f172a}
+.btn.danger{background:#dc2626}
+.btn-olho{width:32px;height:32px;min-width:32px;border:0;border-radius:8px;background:#f1f5f9;color:#475569;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;padding:0;transition:.15s}
+.btn-olho:hover{background:#e2e8f0}
+.btn-olho:active{transform:scale(.96)}
+.valor-sensivel{letter-spacing:1px}
+.valores-ocultos{color:#64748b!important}
+.tablewrap{overflow:auto;max-height:650px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{position:sticky;top:0;background:#f8fafc;text-align:left;color:#475569;padding:11px;border-bottom:1px solid #e2e8f0;white-space:nowrap;z-index:1}
+td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
+.pos{color:#15803d;font-weight:800}
+.neg{color:#dc2626;font-weight:800}
+.tag{padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}
+.compra{background:#dcfce7;color:#166534}
+.venda{background:#fee2e2;color:#991b1b}
+.form{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;align-items:end}
+.form label{font-size:11px;font-weight:800;color:#64748b;display:flex;flex-direction:column;gap:5px;min-width:0}
+.form .acoes{display:flex;gap:8px}
+.muted{color:#64748b;font-size:12px}
+.alert{padding:10px 12px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:12px;margin-bottom:12px}
+.right{text-align:right}
+.acoes-form{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
 @media(max-width:1100px){
-
-.kpis{
-grid-template-columns:repeat(3,1fr)
+.kpis{grid-template-columns:repeat(3,1fr)}
+.grid2{grid-template-columns:1fr}
+.form{grid-template-columns:repeat(3,1fr)}
 }
-
-.grid2{
-grid-template-columns:1fr
-}
-
-.form{
-grid-template-columns:repeat(3,1fr)
-}
-
-}
-
 @media(max-width:650px){
-
-.topo{
-padding:18px;
-flex-direction:column;
-align-items:flex-start
-}
-
-.wrap{
-padding:12px
-}
-
-.kpis{
-grid-template-columns:repeat(2,1fr)
-}
-
-.form{
-grid-template-columns:1fr
-}
-
-.kpi b{
-font-size:18px
-}
-
-#opEmpresa,
-#opCodigo{
-font-size:16px
-}
-
+.topo{padding:18px;flex-direction:column;align-items:flex-start}
+.wrap{padding:12px}
+.nav{padding:0 8px}
+.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+.form{grid-template-columns:1fr}
+.kpi{padding:14px}
+.kpi b{font-size:18px}
+#opEmpresa,#opCodigo{font-size:16px}
+.chartbox{height:270px}
 }
 </style>
 </head>
-
 <body>
-
 <header class="topo">
-
 <div>
 <h1>Nemésio G Brandão • Controle de Ações</h1>
 <p>Compras, vendas, carteira, resultados e taxas em um único painel</p>
 </div>
-
-<div
-class="status"
-id="status">
-Conectando…
-</div>
-
+<div class="status" id="status">Conectando…</div>
 </header>
-
 <nav class="nav">
-
-<button
-class="ativo"
-data-tab="painel">
-Painel
-</button>
-
-<button
-data-tab="carteira">
-Carteira
-</button>
-
-<button
-data-tab="operacoes">
-Operações
-</button>
-
-<button
-data-tab="resultados">
-Resultados
-</button>
-
-<button
-data-tab="taxas">
-Taxas
-</button>
-
+<button type="button" class="ativo" data-tab="painel">Painel</button>
+<button type="button" data-tab="carteira">Carteira</button>
+<button type="button" data-tab="operacoes">Operações</button>
+<button type="button" data-tab="resultados">Resultados</button>
+<button type="button" data-tab="taxas">Taxas</button>
 </nav>
-
 <main class="wrap">
-
 <!-- =========================================================
 PAINEL
 ========================================================= -->
-
-<section
-id="painel"
-class="aba ativa">
-
+<section id="painel" class="aba ativa">
 <div class="kpis">
-
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>VALOR INVESTIDO</small>
-<button
-class="btn-olho"
-type="button"
-onclick="alternarValores()"
-title="Mostrar ou ocultar valores">
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
 <span class="icone-visibilidade">👁</span>
 </button>
 </div>
-<b
-id="kInvestido"
-class="valor-sensivel"
-data-valor="">
-••••••
-</b>
+<b id="kInvestido" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
-
 <div class="kpi">
 <small>AÇÕES/COTAS</small>
 <b id="kQtd">—</b>
 </div>
-
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>LUCRO/PREJUÍZO ACUMULADO</small>
-<button
-class="btn-olho"
-type="button"
-onclick="alternarValores()"
-title="Mostrar ou ocultar valores">
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
 <span class="icone-visibilidade">👁</span>
 </button>
 </div>
-<b
-id="kLucro"
-class="valor-sensivel"
-data-valor="">
-••••••
-</b>
+<b id="kLucro" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
-
 <div class="kpi">
 <small>TAXAS</small>
 <b id="kTaxas">—</b>
 </div>
-
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>COMPRAS</small>
-<button
-class="btn-olho"
-type="button"
-onclick="alternarValores()"
-title="Mostrar ou ocultar valores">
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
 <span class="icone-visibilidade">👁</span>
 </button>
 </div>
-<b
-id="kCompras"
-class="valor-sensivel"
-data-valor="">
-••••••
-</b>
+<b id="kCompras" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
-
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>VENDAS</small>
-<button
-class="btn-olho"
-type="button"
-onclick="alternarValores()"
-title="Mostrar ou ocultar valores">
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
 <span class="icone-visibilidade">👁</span>
 </button>
 </div>
-<b
-id="kVendas"
-class="valor-sensivel"
-data-valor="">
-••••••
-</b>
+<b id="kVendas" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
-
 </div>
-
 <div class="grid2">
-
 <div class="card">
-
 <h3>Resultado realizado por mês</h3>
-
 <div class="chartbox">
 <canvas id="grafResultado"></canvas>
 </div>
-
 </div>
-
 <div class="card">
-
 <h3>Capital investido por ativo</h3>
-
 <div class="chartbox">
 <canvas id="grafCarteira"></canvas>
 </div>
-
 </div>
-
 </div>
-
-<div
-class="card"
-style="margin-top:14px">
-
+<div class="card" style="margin-top:14px">
 <h3>Resumo da carteira atual</h3>
-
 <div id="resumoPainel"></div>
-
 </div>
-
 </section>
-
 <!-- =========================================================
 CARTEIRA
 ========================================================= -->
-
-<section
-id="carteira"
-class="aba">
-
+<section id="carteira" class="aba">
 <div class="card">
-
 <h3>Carteira por empresa / ativo</h3>
-
-<p class="muted">
-O custo médio é recalculado cronologicamente a cada compra e venda.
-</p>
-
+<p class="muted">O custo médio é recalculado cronologicamente a cada compra e venda.</p>
 <div id="tabelaCarteira"></div>
-
 </div>
-
 </section>
-
 <!-- =========================================================
 OPERAÇÕES
 ========================================================= -->
-
-<section
-id="operacoes"
-class="aba">
-
+<section id="operacoes" class="aba">
 <div class="card">
-
 <h3>Nova operação</h3>
-
 <div class="alert">
-Selecione a empresa ou o código da ação. Os dois campos são vinculados automaticamente. Para incluir uma nova ação, utilize a opção “Cadastrar novo ativo”.
+Selecione a empresa ou o código da ação. Os dois campos são vinculados automaticamente. Para incluir uma nova empresa/ação, utilize <b>+ Novo ativo</b>.
 </div>
-
 <div class="form">
-
 <label>
 Data
-
-<input
-id="opData"
-type="date">
+<input id="opData" type="date">
 </label>
-
 <label>
 Empresa
-
-<select
-id="opEmpresa"
-onchange="selecionarEmpresa()">
-
-<option value="">
-Selecione a empresa
-</option>
-
-<option value="__NOVO__">
-➕ CADASTRAR NOVO ATIVO
-</option>
-
+<select id="opEmpresa" onchange="selecionarEmpresa()">
+<option value="">Selecione a empresa</option>
+<option value="__NOVO__">➕ CADASTRAR NOVO ATIVO</option>
 </select>
-
 </label>
-
 <label>
 Código
-
-<select
-id="opCodigo"
-onchange="selecionarCodigo()">
-
-<option value="">
-Selecione o código
-</option>
-
-<option value="__NOVO__">
-➕ CADASTRAR NOVO ATIVO
-</option>
-
+<select id="opCodigo" onchange="selecionarCodigo()">
+<option value="">Selecione o código</option>
+<option value="__NOVO__">➕ CADASTRAR NOVO ATIVO</option>
 </select>
-
 </label>
-
 <label>
 Tipo
-
 <select id="opTipo">
-
-<option value="Compra">
-Compra
-</option>
-
-<option value="Venda">
-Venda
-</option>
-
+<option value="Compra">Compra</option>
+<option value="Venda">Venda</option>
 </select>
-
 </label>
-
 <label>
 Quantidade
-
-<input
-id="opQtd"
-type="number"
-step="0.01"
-min="0"
-placeholder="0">
+<input id="opQtd" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0">
 </label>
-
 <label>
 Preço unitário
-
-<input
-id="opPreco"
-type="number"
-step="0.01"
-min="0"
-placeholder="0,00">
+<input id="opPreco" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00">
 </label>
-
 </div>
-
-<div
-style="
-margin-top:12px;
-display:flex;
-gap:8px;
-flex-wrap:wrap
-">
-
-<button
-class="btn"
-type="button"
-onclick="salvarOperacao()">
-Salvar operação
-</button>
-
-<button
-class="btn sec"
-type="button"
-onclick="abrirNovoAtivo()">
-➕ Novo ativo
-</button>
-
+<div class="acoes-form">
+<button class="btn" type="button" onclick="salvarOperacao()">Salvar operação</button>
+<button class="btn sec" type="button" onclick="abrirNovoAtivo()">➕ Novo ativo</button>
 </div>
-
 </div>
-
-<div
-class="card"
-style="margin-top:14px">
-
+<div class="card" style="margin-top:14px">
 <div class="toolbar">
-
-<input
-id="buscaOp"
-placeholder="Buscar empresa/código"
-oninput="renderOperacoes()">
-
-<select
-id="tipoOp"
-onchange="renderOperacoes()">
-
-<option value="">
-Todos os tipos
-</option>
-
-<option value="Compra">
-Compra
-</option>
-
-<option value="Venda">
-Venda
-</option>
-
+<input id="buscaOp" type="search" placeholder="Buscar empresa/código" oninput="renderOperacoes()">
+<select id="tipoOp" onchange="renderOperacoes()">
+<option value="">Todos os tipos</option>
+<option value="Compra">Compra</option>
+<option value="Venda">Venda</option>
 </select>
-
 </div>
-
 <div id="tabelaOperacoes"></div>
-
 </div>
-
 </section>
-
 <!-- =========================================================
 RESULTADOS
 ========================================================= -->
-
-<section
-id="resultados"
-class="aba">
-
+<section id="resultados" class="aba">
 <div class="card">
-
 <h3>Resultado mensal</h3>
-
-<p class="muted">
-Acompanhamento consolidado das compras, vendas, lucros, prejuízos e taxas.
-</p>
-
+<p class="muted">Acompanhamento consolidado das compras, vendas, lucros, prejuízos e taxas.</p>
 <div id="tabelaMensal"></div>
-
 </div>
-
 </section>
-
 <!-- =========================================================
 TAXAS
 ========================================================= -->
-
-<section
-id="taxas"
-class="aba">
-
+<section id="taxas" class="aba">
 <div class="card">
-
 <h3>Registrar / atualizar taxas do dia</h3>
-
 <div class="form">
-
 <label>
 Data
-
-<input
-id="txData"
-type="date">
+<input id="txData" type="date">
 </label>
-
 <label>
 Liquidação
-
-<input
-id="txLiq"
-type="number"
-step="0.01"
-min="0"
-value="0">
+<input id="txLiq" type="number" step="0.01" min="0" inputmode="decimal" value="0">
 </label>
-
 <label>
 Negociação
-
-<input
-id="txNeg"
-type="number"
-step="0.01"
-min="0"
-value="0">
+<input id="txNeg" type="number" step="0.01" min="0" inputmode="decimal" value="0">
 </label>
-
 <label>
 IRRF
-
-<input
-id="txIrrf"
-type="number"
-step="0.01"
-min="0"
-value="0">
+<input id="txIrrf" type="number" step="0.01" min="0" inputmode="decimal" value="0">
 </label>
-
 <div>
-
-<button
-class="btn"
-type="button"
-onclick="salvarTaxa()">
-Salvar taxas
-</button>
-
+<button class="btn" type="button" onclick="salvarTaxa()">Salvar taxas</button>
 </div>
-
 </div>
-
 </div>
-
-<div
-class="card"
-style="margin-top:14px">
-
+<div class="card" style="margin-top:14px">
 <div id="tabelaTaxas"></div>
-
 </div>
-
 </section>
-
 </main>
-
-<script src="app.js"></script>
-
+<script src="./app.js?v=20260824-1"></script>
 </body>
 </html>
