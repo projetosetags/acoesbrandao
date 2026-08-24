@@ -430,9 +430,23 @@ class="aba ativa">
 
 <div class="kpis">
 
-<div class="kpi">
+<div class="kpi kpi-sensivel">
+<div class="kpi-topo">
 <small>VALOR INVESTIDO</small>
-<b id="kInvestido">—</b>
+<button
+class="btn-olho"
+type="button"
+onclick="alternarValores()"
+title="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
+</div>
+<b
+id="kInvestido"
+class="valor-sensivel"
+data-valor="">
+••••••
+</b>
 </div>
 
 <div class="kpi">
@@ -440,9 +454,23 @@ class="aba ativa">
 <b id="kQtd">—</b>
 </div>
 
-<div class="kpi">
-<small>LUCRO/PREJUÍZO REALIZADO</small>
-<b id="kLucro">—</b>
+<div class="kpi kpi-sensivel">
+<div class="kpi-topo">
+<small>LUCRO/PREJUÍZO ACUMULADO</small>
+<button
+class="btn-olho"
+type="button"
+onclick="alternarValores()"
+title="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
+</div>
+<b
+id="kLucro"
+class="valor-sensivel"
+data-valor="">
+••••••
+</b>
 </div>
 
 <div class="kpi">
@@ -450,14 +478,42 @@ class="aba ativa">
 <b id="kTaxas">—</b>
 </div>
 
-<div class="kpi">
+<div class="kpi kpi-sensivel">
+<div class="kpi-topo">
 <small>COMPRAS</small>
-<b id="kCompras">—</b>
+<button
+class="btn-olho"
+type="button"
+onclick="alternarValores()"
+title="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
+</div>
+<b
+id="kCompras"
+class="valor-sensivel"
+data-valor="">
+••••••
+</b>
 </div>
 
-<div class="kpi">
+<div class="kpi kpi-sensivel">
+<div class="kpi-topo">
 <small>VENDAS</small>
-<b id="kVendas">—</b>
+<button
+class="btn-olho"
+type="button"
+onclick="alternarValores()"
+title="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
+</div>
+<b
+id="kVendas"
+class="valor-sensivel"
+data-valor="">
+••••••
+</b>
 </div>
 
 </div>
