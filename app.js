@@ -8,6 +8,7 @@ let ATIVOS=[]
 let CALC=null
 let CHART1=null
 let CHART2=null
+let VALORES_VISIVEIS=false
 
 const brl=v=>(Number(v)||0).toLocaleString(
 'pt-BR',
@@ -750,7 +751,84 @@ r.data.codigo
 )
 
 }
+/*=========================================================
+009 PRIVACIDADE DOS VALORES
+=========================================================*/
 
+function alternarValores(){
+
+VALORES_VISIVEIS=!VALORES_VISIVEIS
+
+atualizarVisibilidadeValores()
+
+}
+
+function atualizarVisibilidadeValores(){
+
+document
+.querySelectorAll('.valor-sensivel')
+.forEach(el=>{
+
+if(VALORES_VISIVEIS){
+
+el.textContent=el.dataset.valor||'R$ 0,00'
+
+el.classList.remove('valores-ocultos')
+
+}else{
+
+el.textContent='••••••'
+
+el.classList.add('valores-ocultos')
+
+}
+
+})
+
+document
+.querySelectorAll('.icone-visibilidade')
+.forEach(el=>{
+
+el.textContent=
+VALORES_VISIVEIS
+?'🙈'
+:'👁'
+
+})
+
+document
+.querySelectorAll('.btn-olho')
+.forEach(btn=>{
+
+btn.title=
+VALORES_VISIVEIS
+?'Ocultar valores'
+:'Mostrar valores'
+
+})
+
+}
+let lucro=
+document.getElementById('kLucro')
+
+if(lucro){
+
+lucro.classList.remove(
+'pos',
+'neg'
+)
+
+if(VALORES_VISIVEIS){
+
+lucro.classList.add(
+CALC&&CALC.realizado>=0
+?'pos'
+:'neg'
+)
+
+}
+
+}
 /*=========================================================
 009 RENDERIZAR TUDO
 =========================================================*/
@@ -778,36 +856,67 @@ let kVendas=
 document.getElementById('kVendas')
 
 if(kInvestido){
-kInvestido.textContent=brl(CALC.investido)
+
+kInvestido.dataset.valor=
+brl(CALC.investido)
+
 }
 
 if(kQtd){
-kQtd.textContent=num(CALC.qtd)
+
+kQtd.textContent=
+num(CALC.qtd)
+
 }
 
 if(kLucro){
 
-kLucro.textContent=
+kLucro.dataset.valor=
 brl(CALC.realizado)
 
-kLucro.className=
+kLucro.classList.remove(
+'pos',
+'neg'
+)
+
+kLucro.classList.add(
+'valor-sensivel'
+)
+
+if(VALORES_VISIVEIS){
+
+kLucro.classList.add(
 CALC.realizado>=0
 ?'pos'
 :'neg'
+)
+
+}
 
 }
 
 if(kTaxas){
-kTaxas.textContent=brl(CALC.taxasTotal)
+
+kTaxas.textContent=
+brl(CALC.taxasTotal)
+
 }
 
 if(kCompras){
-kCompras.textContent=brl(CALC.compras)
+
+kCompras.dataset.valor=
+brl(CALC.compras)
+
 }
 
 if(kVendas){
-kVendas.textContent=brl(CALC.vendas)
+
+kVendas.dataset.valor=
+brl(CALC.vendas)
+
 }
+
+atualizarVisibilidadeValores()
 
 renderCarteira()
 renderOperacoes()
