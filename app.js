@@ -182,11 +182,9 @@ let m=String(t.data).slice(0,7)
 if(!mensal[m]){
 mensal[m]={mes:m,compras:0,vendas:0,lucro:0,taxas:0}
 }
-let taxa=Number(t.taxas_operacionais)||(
-(Number(t.taxa_liquidacao)||0)+
-(Number(t.taxa_negociacao)||0)+
-(Number(t.irrf)||0)
-)
+let liquidacao=Number(t.taxa_liquidacao)||0
+let negociacao=Number(t.taxa_negociacao)||0
+let taxa=liquidacao+negociacao
 mensal[m].taxas+=taxa
 taxasTotal+=taxa
 }
