@@ -849,6 +849,10 @@ atualizarVisibilidadeValores()
 
 }
 
+/*=========================================================
+010 VISIBILIDADE DOS VALORES
+=========================================================*/
+
 function atualizarVisibilidadeValores(){
 
 document
@@ -857,19 +861,50 @@ document
 
 if(VALORES_VISIVEIS){
 
-el.textContent=el.dataset.valor||'R$ 0,00'
+el.textContent=
+el.dataset.valor||'R$ 0,00'
 
-el.classList.remove('valores-ocultos')
+el.classList.remove(
+'valores-ocultos'
+)
 
 }else{
 
 el.textContent='••••••'
 
-el.classList.add('valores-ocultos')
+el.classList.add(
+'valores-ocultos'
+)
 
 }
 
 })
+
+/* LUCRO VERDE OU VERMELHO */
+
+let lucro=
+document.getElementById('kLucro')
+
+if(lucro){
+
+lucro.classList.remove(
+'pos',
+'neg'
+)
+
+if(VALORES_VISIVEIS&&CALC){
+
+lucro.classList.add(
+CALC.realizado>=0
+?'pos'
+:'neg'
+)
+
+}
+
+}
+
+/* ÍCONES */
 
 document
 .querySelectorAll('.icone-visibilidade')
@@ -881,6 +916,8 @@ VALORES_VISIVEIS
 :'👁'
 
 })
+
+}
 
 document
 .querySelectorAll('.btn-olho')
@@ -921,6 +958,8 @@ CALC&&CALC.realizado>=0
 
 function renderTudo(){
 
+if(!CALC)return
+
 carregarListasAtivos()
 
 let kInvestido=
@@ -941,12 +980,16 @@ document.getElementById('kCompras')
 let kVendas=
 document.getElementById('kVendas')
 
+/* VALOR INVESTIDO */
+
 if(kInvestido){
 
 kInvestido.dataset.valor=
 brl(CALC.investido)
 
 }
+
+/* QUANTIDADE */
 
 if(kQtd){
 
@@ -955,31 +998,16 @@ num(CALC.qtd)
 
 }
 
+/* LUCRO / PREJUÍZO */
+
 if(kLucro){
 
 kLucro.dataset.valor=
 brl(CALC.realizado)
 
-kLucro.classList.remove(
-'pos',
-'neg'
-)
-
-kLucro.classList.add(
-'valor-sensivel'
-)
-
-if(VALORES_VISIVEIS){
-
-kLucro.classList.add(
-CALC.realizado>=0
-?'pos'
-:'neg'
-)
-
 }
 
-}
+/* TAXAS */
 
 if(kTaxas){
 
@@ -988,12 +1016,16 @@ brl(CALC.taxasTotal)
 
 }
 
+/* COMPRAS */
+
 if(kCompras){
 
 kCompras.dataset.valor=
 brl(CALC.compras)
 
 }
+
+/* VENDAS */
 
 if(kVendas){
 
@@ -1002,12 +1034,20 @@ brl(CALC.vendas)
 
 }
 
+/* PRIVACIDADE */
+
 atualizarVisibilidadeValores()
 
+/* PAINÉIS */
+
 renderCarteira()
+
 renderOperacoes()
+
 renderMensal()
+
 renderTaxas()
+
 renderGraficos()
 
 }
