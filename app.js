@@ -510,27 +510,24 @@ box.innerHTML=tabela([
 016 RENDERIZAR TAXAS
 =========================================================*/
 function renderTaxas(){
-let rows=[...TAXAS].reverse().map(t=>{
+let dados=[...TAXAS].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')))
+let rows=dados.map(t=>{
 let liquidacao=Number(t.taxa_liquidacao)||0
 let negociacao=Number(t.taxa_negociacao)||0
 let irrf=Number(t.irrf)||0
-let demais=Number(t.outras_taxas)||0
-let taxasSemIRRF=liquidacao+negociacao+demais
-let totalGeral=taxasSemIRRF+irrf
+let total=liquidacao+negociacao
 return `<tr>
-<td>${dataBR(t.data)}</td>
+<td><b>${dataBR(t.data)}</b></td>
 <td class="right">${brl(liquidacao)}</td>
 <td class="right">${brl(negociacao)}</td>
-<td class="right">${brl(demais)}</td>
-<td class="right"><b>${brl(irrf)}</b></td>
-<td class="right"><b>${brl(taxasSemIRRF)}</b></td>
-<td class="right"><b>${brl(totalGeral)}</b></td>
-<td><button class="btn-excluir-mini" type="button" onclick="excluirTaxa(${Number(t.id)})" title="Excluir taxas">Excluir</button></td>
+<td class="right"><b>${brl(total)}</b></td>
+<td class="right">${brl(irrf)}</td>
+<td><button class="btn-excluir-mini" type="button" onclick="excluirTaxa(${Number(t.id)})" title="Excluir registro">Excluir</button></td>
 </tr>`
 })
 let box=document.getElementById('tabelaTaxas')
 if(box){
-box.innerHTML=tabela(['Data','Liquidação','Negociação','Demais taxas','IRRF','Total taxas','Total geral',''],rows)
+box.innerHTML=tabela(['Data','Liquidação','Negociação','Total','IRRF',''],rows)
 }
 }
 /*=========================================================
