@@ -871,7 +871,284 @@ return
 await carregar()
 }
 /*=========================================================
-022 INICIALIZAÇÃO
+022 EXPORTAR PAINEL EM PDF
+=========================================================*/
+function exportarPDF(painel){
+if(!CALC)return
+if(!window.jspdf||!window.jspdf.jsPDF){
+alert('Biblioteca de PDF não carregada.')
+return
+}
+const{jsPDF}=window.jspdf
+let titulo=''
+let cabecalho=[]
+let linhas=[]
+if(painel==='painel'){
+titulo='Visão Geral'
+cabecalho=['Indicador','Valor']
+linhas=[
+['Valor Investido',brl(CALC.investido)],
+['Ações/Cotas',num(CALC.qtd)],
+['Lucro/Prejuízo Realizado',brl(CALC.realizado)],
+['Taxas',brl(CALC.taxasTotal)],
+['Compras',brl(CALC.compras)],
+['Vendas',brl(CALC.vendas)]
+]
+}
+if(painel==='carteira'){
+titulo='Carteira'
+cabecalho=['Empresa','Código','Qtd. Atual','Custo Atual','Preço Médio','Lucro/Prejuízo','Operações']
+linhas=CALC.carteira.map(a=>[
+String(a.empresa||''),
+String(a.codigo||''),
+num(a.qtd),
+brl(a.custo),
+brl(a.pm),
+brl(a.realizado),
+String(a.operacoes||0)
+])
+}
+if(painel==='operacoes'){
+titulo='Operações'
+cabecalho=['Data','Empresa','Código','Tipo','Quantidade','Preço','Valor Bruto']
+linhas=[...OPERACOES].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||''))).map(o=>[
+dataBR(o.data),
+String(o.empresa||''),
+String(o.codigo||''),
+String(o.tipo||''),
+num(o.quantidade),
+brl(o.preco_unitario),
+brl(Number(o.valor_bruto)||((Number(o.quantidade)||0)*(Number(o.preco_unitario)||0)))
+])
+}
+if(painel==='resultados'){
+titulo='Resultados'
+cabecalho=['Mês','Compras','Vendas','Resultado Bruto','Taxas','Resultado Líquido']
+linhas=[...CALC.mensal].sort((a,b)=>b.mes.localeCompare(a.mes)).map(x=>[
+mesBR(x.mes+'-01'),
+brl(x.compras),
+brl(x.vendas),
+brl(x.lucro),
+brl(x.taxas),
+brl(x.lucro-x.taxas)
+])
+}
+if(painel==='taxas'){
+titulo='Taxas'
+cabecalho=['Data','Liquidação','Negociação','Total','IRRF']
+linhas=[...TAXAS].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||''))).map(t=>{
+let liquidacao=Number(t.taxa_liquidacao)||0
+let negociacao=Number(t.taxa_negociacao)||0
+let irrf=Number(t.irrf)||0
+return[
+dataBR(t.data),
+brl(liquidacao),
+brl(negociacao),
+brl(liquidacao+negociacao),
+brl(irrf)
+]
+})
+}
+if(!titulo)return
+let horizontal=painel==='carteira'||painel==='operacoes'||painel==='resultados'
+let doc=new jsPDF({
+orientation:horizontal?'landscape':'portrait',
+unit:'mm',
+format:'a4'
+})
+doc.setFont('helvetica','bold')
+doc.setFontSize(16)
+doc.text('Nemésio G Brandão',14,16)
+doc.setFontSize(11)
+doc.text('Controle de Ações • '+titulo,14,23)
+doc.setFont('helvetica','normal')
+doc.setFontSize(8)
+doc.text('Gerado em '+new Date().toLocaleString('pt-BR'),14,29)
+doc.autoTable({
+startY:35,
+head:[cabecalho],
+body:linhas,
+theme:'grid',
+styles:{
+font:'helvetica',
+fontSize:horizontal?7:8,
+cellPadding:2.3,
+valign:'middle'
+},
+headStyles:{
+fillColor:[15,23,42],
+textColor:[255,255,255],
+fontStyle:'bold'
+},
+alternateRowStyles:{
+fillColor:[248,250,252]
+},
+margin:{
+left:10,
+right:10
+}
+})
+doc.save('Nemésio_G_Brandão_'+titulo.replace(/\s+/g,'_')+'.pdf')
+}
+/*=========================================================
+023 EXPORTAR TODOS OS PAINÉIS EM EXCEL
+=========================================================*/
+function exportarExcelCompleto(){
+if(!CALC)return
+if(typeof XLSX==='undefined'){
+alert('Biblioteca do Excel não carregada.')
+return
+}
+let wb=XLSX.utils.book_new()
+/*=========================================================
+RESUMO
+=========================================================*/
+let resumo=[
+['NEMÉSIO G BRANDÃO • CONTROLE DE AÇÕES'],
+[],
+['Indicador','Valor'],
+['Valor Investido',Number(CALC.investido)||0],
+['Ações/Cotas',Number(CALC.qtd)||0],
+['Lucro/Prejuízo Realizado',Number(CALC.realizado)||0],
+['Taxas',Number(CALC.taxasTotal)||0],
+['Compras',Number(CALC.compras)||0],
+['Vendas',Number(CALC.vendas)||0]
+]
+let wsResumo=XLSX.utils.aoa_to_sheet(resumo)
+wsResumo['!cols']=[{wch:30},{wch:20}]
+XLSX.utils.book_append_sheet(wb,wsResumo,'Resumo')
+/*=========================================================
+CARTEIRA
+=========================================================*/
+let carteira=[
+['Empresa','Código','Qtd. Atual','Custo Atual','Preço Médio','Lucro/Prejuízo','Operações'],
+...CALC.carteira.map(a=>[
+a.empresa,
+a.codigo,
+Number(a.qtd)||0,
+Number(a.custo)||0,
+Number(a.pm)||0,
+Number(a.realizado)||0,
+Number(a.operacoes)||0
+])
+]
+let wsCarteira=XLSX.utils.aoa_to_sheet(carteira)
+wsCarteira['!cols']=[
+{wch:32},
+{wch:12},
+{wch:14},
+{wch:18},
+{wch:16},
+{wch:20},
+{wch:12}
+]
+XLSX.utils.book_append_sheet(wb,wsCarteira,'Carteira')
+/*=========================================================
+OPERAÇÕES
+=========================================================*/
+let operacoes=[
+['Data','Empresa','Código','Tipo','Quantidade','Preço Unitário','Valor Bruto'],
+...[...OPERACOES].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||''))).map(o=>[
+dataBR(o.data),
+o.empresa,
+o.codigo,
+o.tipo,
+Number(o.quantidade)||0,
+Number(o.preco_unitario)||0,
+Number(o.valor_bruto)||((Number(o.quantidade)||0)*(Number(o.preco_unitario)||0))
+])
+]
+let wsOperacoes=XLSX.utils.aoa_to_sheet(operacoes)
+wsOperacoes['!cols']=[
+{wch:13},
+{wch:32},
+{wch:12},
+{wch:12},
+{wch:14},
+{wch:18},
+{wch:18}
+]
+XLSX.utils.book_append_sheet(wb,wsOperacoes,'Operações')
+/*=========================================================
+RESULTADOS
+=========================================================*/
+let resultados=[
+['Mês','Compras','Vendas','Resultado Bruto','Taxas','Resultado Líquido'],
+...[...CALC.mensal].sort((a,b)=>b.mes.localeCompare(a.mes)).map(x=>[
+mesBR(x.mes+'-01'),
+Number(x.compras)||0,
+Number(x.vendas)||0,
+Number(x.lucro)||0,
+Number(x.taxas)||0,
+(Number(x.lucro)||0)-(Number(x.taxas)||0)
+])
+]
+let wsResultados=XLSX.utils.aoa_to_sheet(resultados)
+wsResultados['!cols']=[
+{wch:13},
+{wch:18},
+{wch:18},
+{wch:20},
+{wch:16},
+{wch:20}
+]
+XLSX.utils.book_append_sheet(wb,wsResultados,'Resultados')
+/*=========================================================
+TAXAS
+=========================================================*/
+let taxas=[
+['Data','Liquidação','Negociação','Total','IRRF'],
+...[...TAXAS].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||''))).map(t=>{
+let liquidacao=Number(t.taxa_liquidacao)||0
+let negociacao=Number(t.taxa_negociacao)||0
+let irrf=Number(t.irrf)||0
+return[
+dataBR(t.data),
+liquidacao,
+negociacao,
+liquidacao+negociacao,
+irrf
+]
+})
+]
+let wsTaxas=XLSX.utils.aoa_to_sheet(taxas)
+wsTaxas['!cols']=[
+{wch:13},
+{wch:18},
+{wch:18},
+{wch:18},
+{wch:18}
+]
+XLSX.utils.book_append_sheet(wb,wsTaxas,'Taxas')
+/*=========================================================
+FORMATAR VALORES MONETÁRIOS
+=========================================================*/
+formatarMoedaExcel(wsResumo,[4,6,7,8,9],[2])
+formatarMoedaExcel(wsCarteira,null,[4,5,6])
+formatarMoedaExcel(wsOperacoes,null,[6,7])
+formatarMoedaExcel(wsResultados,null,[2,3,4,5,6])
+formatarMoedaExcel(wsTaxas,null,[2,3,4,5])
+XLSX.writeFile(wb,'Nemesio_G_Brandao_Controle_Acoes.xlsx')
+}
+/*=========================================================
+024 FORMATAR MOEDA NO EXCEL
+=========================================================*/
+function formatarMoedaExcel(ws,linhas,colunas){
+if(!ws||!ws['!ref'])return
+let range=XLSX.utils.decode_range(ws['!ref'])
+for(let r=range.s.r;r<=range.e.r;r++){
+if(linhas&&!linhas.includes(r+1))continue
+for(const coluna of colunas){
+let endereco=XLSX.utils.encode_cell({r:r,c:coluna-1})
+let celula=ws[endereco]
+if(celula&&typeof celula.v==='number'){
+celula.z='R$ #,##0.00'
+}
+}
+}
+}
+/*=========================================================
+025 INICIALIZAÇÃO
 =========================================================*/
 function inicializar(){
 let campoOpData=document.getElementById('opData')
