@@ -1653,15 +1653,16 @@ return novaPaginaPDF(doc,titulo)
 if(selecionados.resumo){
 let y=prepararSecao('Resumo')
 y=tituloSecaoPDF(doc,'Resumo geral',y)
-let totalIRRF=calcularTotalIRRF()
-let resultadoAposTaxas=CALC.realizado-CALC.taxasTotal
+let taxasPeriodo=TAXAS.filter(t=>registroNoPeriodoPDF(t.data,filtrosPDF))
+let totalIRRF=taxasPeriodo.reduce((s,t)=>s+(Number(t.irrf)||0),0)
+let resultadoAposTaxas=CALC_PDF.realizado-CALC_PDF.taxasTotal
 let cards=[
-['Valor investido',moedaPDF(CALC.investido)],
-['Ações / Cotas',numeroPDF(CALC.qtd,2)],
-['Lucro / Prejuízo acumulado',moedaPDF(CALC.realizado)],
-['Taxas operacionais',moedaPDF(CALC.taxasTotal)],
-['Compras',moedaPDF(CALC.compras)],
-['Vendas',moedaPDF(CALC.vendas)],
+['Valor investido',moedaPDF(CALC_PDF.investido)],
+['Ações / Cotas',numeroPDF(CALC_PDF.qtd,2)],
+['Lucro / Prejuízo acumulado',moedaPDF(CALC_PDF.realizado)],
+['Taxas operacionais',moedaPDF(CALC_PDF.taxasTotal)],
+['Compras',moedaPDF(CALC_PDF.compras)],
+['Vendas',moedaPDF(CALC_PDF.vendas)],
 ['Resultado após taxas',moedaPDF(resultadoAposTaxas)],
 ['IRRF registrado',moedaPDF(totalIRRF)]
 ]
@@ -1739,12 +1740,12 @@ y+=alturaGraf+7
 /*=========================================================
 042 PDF - RESUMO DA CARTEIRA
 =========================================================*/
-if(CALC.carteira.length){
+if(CALC_PDF.carteira.length){
 if(y>155){
 y=novaPaginaPDF(doc,'Resumo')
 }
 y=tituloSecaoPDF(doc,'Resumo da carteira atual',y)
-let linhas=CALC.carteira.map(a=>[
+let linhas=CALC_PDF.carteira.map(a=>[
 textoPDF(a.empresa),
 textoPDF(a.codigo),
 numeroPDF(a.qtd,2),
@@ -1786,7 +1787,7 @@ columnStyles:{
 if(selecionados.carteira){
 let y=prepararSecao('Carteira')
 y=tituloSecaoPDF(doc,'Carteira por empresa / ativo',y)
-let linhas=CALC.carteira.map(a=>[
+let linhas=CALC_PDF.carteira.map(a=>[
 textoPDF(a.empresa),
 textoPDF(a.codigo),
 numeroPDF(a.qtd,2),
@@ -1820,7 +1821,7 @@ columnStyles:{
 },
 didParseCell:function(data){
 if(data.section==='body'&&data.column.index===5){
-let linha=CALC.carteira[data.row.index]
+let linha=CALC_PDF.carteira[data.row.index]
 if(linha){
 if(Number(linha.realizado)>=0){
 data.cell.styles.textColor=[21,128,61]
@@ -1840,7 +1841,7 @@ data.cell.styles.fontStyle='bold'
 if(selecionados.operacoes){
 let y=prepararSecao('Operações')
 y=tituloSecaoPDF(doc,'Histórico de compras e vendas',y)
-let dados=[...OPERACOES].sort((a,b)=>{
+let dados=[...OPERACOES_PDF].sort((a,b)=>{
 let dataA=String(a.data||'')
 let dataB=String(b.data||'')
 if(dataA!==dataB)return dataB.localeCompare(dataA)
@@ -1906,7 +1907,7 @@ data.cell.styles.fontStyle='bold'
 if(selecionados.resultados){
 let y=prepararSecao('Resultados')
 y=tituloSecaoPDF(doc,'Resultado mensal',y)
-let dados=[...CALC.mensal].reverse()
+let dados=[...CALC_PDF.mensal].reverse()
 let linhas=dados.map(x=>[
 mesBR(x.mes+'-01'),
 moedaPDF(x.compras),
@@ -1968,6 +1969,7 @@ if(selecionados.taxas){
 let y=prepararSecao('Taxas')
 y=tituloSecaoPDF(doc,'Taxas operacionais',y)
 let dados=[...TAXAS]
+.filter(t=>registroNoPeriodoPDF(t.data,filtrosPDF))
 .filter(t=>{
 let liquidacao=Number(t.taxa_liquidacao)||0
 let negociacao=Number(t.taxa_negociacao)||0
@@ -2043,6 +2045,7 @@ if(selecionados.irrf){
 let y=prepararSecao('IRRF')
 y=tituloSecaoPDF(doc,'IRRF registrado',y)
 let dados=[...TAXAS]
+.filter(t=>registroNoPeriodoPDF(t.data,filtrosPDF))
 .filter(t=>(Number(t.irrf)||0)!==0)
 .sort((a,b)=>{
 let dataA=String(a.data||'')
