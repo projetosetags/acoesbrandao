@@ -17,6 +17,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 <style>
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;background:#f1f5f9}
@@ -75,11 +77,6 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .alert{padding:10px 12px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:12px;margin-bottom:12px}
 .right{text-align:right}
 .acoes-form{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-.cabecalho-painel{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:14px}
-.cabecalho-painel h2{margin:0;font-size:20px}
-.exportacoes{display:flex;align-items:center;gap:8px}
-.btn-exportar{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer}
-.btn-exportar:hover{background:#f8fafc}
 #tabelaOperacoes .tablewrap,#tabelaTaxas .tablewrap{max-height:650px}
 #tabelaOperacoes table,#tabelaTaxas table{font-size:12px}
 #tabelaOperacoes th,#tabelaTaxas th{padding:7px 9px;height:32px;font-size:11px;line-height:1.15}
@@ -145,12 +142,29 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .total-irrf{display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:14px 10px 4px;border-top:2px solid #e2e8f0}
 .total-irrf span{font-size:11px;font-weight:800;color:#64748b}
 .total-irrf strong{font-size:17px;color:#0f172a}
+/*=========================================================
+EXPORTAÇÃO PDF
+=========================================================*/
+.exportar-box{margin-bottom:14px;padding:16px 18px}
+.exportar-topo{display:flex;align-items:center;justify-content:space-between;gap:15px;flex-wrap:wrap}
+.exportar-titulo h3{margin:0 0 4px;font-size:15px}
+.exportar-titulo p{margin:0;color:#64748b;font-size:12px}
+.exportar-controles{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.exportar-opcoes{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.exportar-check{display:flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#334155;font-size:11px;font-weight:800;cursor:pointer;user-select:none}
+.exportar-check:hover{background:#f1f5f9;border-color:#cbd5e1}
+.exportar-check input{width:15px;height:15px;margin:0;accent-color:#2563eb;cursor:pointer}
+.btn-pdf{border:0;border-radius:9px;padding:9px 13px;background:#dc2626;color:#fff;font-size:11px;font-weight:900;cursor:pointer;white-space:nowrap;min-height:36px}
+.btn-pdf:hover{background:#b91c1c}
+.btn-pdf:active{transform:translateY(1px)}
 @media(max-width:1100px){
 .kpis{grid-template-columns:repeat(3,1fr)}
 .grid2{grid-template-columns:1fr}
 .form{grid-template-columns:repeat(3,1fr)}
 .form-taxas{grid-template-columns:repeat(3,1fr)}
 .form-irrf{grid-template-columns:repeat(2,1fr)}
+.exportar-topo{align-items:flex-start}
+.exportar-controles{width:100%}
 }
 @media(max-width:650px){
 .topo{padding:calc(18px + env(safe-area-inset-top)) 18px 18px;flex-direction:column;align-items:flex-start}
@@ -165,10 +179,14 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 #opEmpresa,#opCodigo{font-size:16px}
 .chartbox{height:270px}
 .card{padding:14px}
-.cabecalho-painel{align-items:center}
 #tabelaCarteira table,#resumoPainel table{min-width:850px}
 #tabelaMensal table{min-width:760px}
 #tabelaOperacoes table{min-width:760px}
+.exportar-box{padding:14px}
+.exportar-controles{display:block}
+.exportar-opcoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%;margin-bottom:10px}
+.exportar-check{min-height:38px}
+.btn-pdf{width:100%;min-height:42px}
 }
 </style>
 </head>
@@ -193,6 +211,25 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 PAINEL/RESUMO
 ========================================================= -->
 <section id="painel" class="aba ativa">
+<div class="card exportar-box">
+<div class="exportar-topo">
+<div class="exportar-titulo">
+<h3>📄 Salvar relatório em PDF</h3>
+<p>Marque os painéis que deseja incluir no relatório.</p>
+</div>
+<div class="exportar-controles">
+<div class="exportar-opcoes">
+<label class="exportar-check"><input type="checkbox" id="pdfResumo" value="resumo" checked>Resumo</label>
+<label class="exportar-check"><input type="checkbox" id="pdfCarteira" value="carteira">Carteira</label>
+<label class="exportar-check"><input type="checkbox" id="pdfOperacoes" value="operacoes">Operações</label>
+<label class="exportar-check"><input type="checkbox" id="pdfResultados" value="resultados">Resultados</label>
+<label class="exportar-check"><input type="checkbox" id="pdfTaxas" value="taxas">Taxas</label>
+<label class="exportar-check"><input type="checkbox" id="pdfIRRF" value="irrf">IRRF</label>
+</div>
+<button class="btn-pdf" type="button" onclick="exportarPDFSelecionado()">📄 Salvar selecionados em PDF</button>
+</div>
+</div>
+</div>
 <div class="kpis">
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
@@ -298,12 +335,6 @@ RESULTADOS
 TAXAS
 ========================================================= -->
 <section id="taxas" class="aba">
-<div class="cabecalho-painel">
-<h2>Taxas</h2>
-<div class="exportacoes">
-<button class="btn-exportar pdf" type="button" onclick="exportarPDF('taxas')">📄 PDF</button>
-</div>
-</div>
 <div class="card">
 <h3>Registrar / atualizar taxas do dia</h3>
 <div class="form form-taxas">
@@ -322,12 +353,6 @@ TAXAS
 IRRF
 ========================================================= -->
 <section id="irrf" class="aba">
-<div class="cabecalho-painel">
-<h2>IRRF</h2>
-<div class="exportacoes">
-<button class="btn-exportar pdf" type="button" onclick="exportarPDF('irrf')">📄 PDF</button>
-</div>
-</div>
 <div class="card">
 <h3>Registrar / atualizar IRRF do dia</h3>
 <div class="form form-irrf">
@@ -342,6 +367,6 @@ IRRF
 </div>
 </section>
 </main>
-<script src="./app.js?v=20260825-1"></script>
+<script src="./app.js?v=20260825-2"></script>
 </body>
 </html>
