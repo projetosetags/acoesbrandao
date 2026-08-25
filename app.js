@@ -1361,6 +1361,251 @@ return null
 }
 }
 /*=========================================================
+058 ALTERNAR PERÍODO DO PDF
+=========================================================*/
+function alternarPeriodoPDF(){
+let todos=document.getElementById('pdfTodoPeriodo')
+let inicial=document.getElementById('pdfDataInicial')
+let final=document.getElementById('pdfDataFinal')
+let usarTodos=todos?.checked!==false
+if(inicial)inicial.disabled=usarTodos
+if(final)final.disabled=usarTodos
+atualizarResumoFiltrosPDF()
+}
+/*=========================================================
+059 ALTERNAR ATIVOS DO PDF
+=========================================================*/
+function alternarAtivosPDF(){
+let todos=document.getElementById('pdfTodosAtivos')
+let busca=document.getElementById('pdfBuscaAtivo')
+let lista=document.getElementById('pdfListaAtivos')
+let marcar=document.getElementById('btnPDFMarcarAtivos')
+let limpar=document.getElementById('btnPDFLimparAtivos')
+let usarTodos=todos?.checked!==false
+if(busca)busca.disabled=usarTodos
+if(marcar)marcar.disabled=usarTodos
+if(limpar)limpar.disabled=usarTodos
+if(lista){
+lista.classList.toggle('pdf-lista-desabilitada',usarTodos)
+}
+renderAtivosPDF()
+atualizarResumoFiltrosPDF()
+}
+/*=========================================================
+060 LISTA DE ATIVOS PARA PDF
+=========================================================*/
+function obterAtivosDisponiveisPDF(){
+let mapa=new Map()
+ATIVOS.forEach(a=>{
+let codigo=String(a.codigo||'').trim().toUpperCase()
+let empresa=String(a.empresa||'').trim()
+if(codigo){
+mapa.set(codigo,{codigo,empresa})
+}
+})
+OPERACOES.forEach(o=>{
+let codigo=String(o.codigo||'').trim().toUpperCase()
+let empresa=String(o.empresa||'').trim()
+if(codigo&&!mapa.has(codigo)){
+mapa.set(codigo,{codigo,empresa})
+}
+})
+return[...mapa.values()].sort((a,b)=>
+a.codigo.localeCompare(b.codigo,'pt-BR')
+)
+}
+/*=========================================================
+061 RENDERIZAR ATIVOS DO PDF
+=========================================================*/
+function renderAtivosPDF(){
+let box=document.getElementById('pdfListaAtivos')
+if(!box)return
+let todos=document.getElementById('pdfTodosAtivos')
+let desabilitado=todos?.checked!==false
+let busca=String(
+document.getElementById('pdfBuscaAtivo')?.value||''
+).trim().toLowerCase()
+let selecionadosAntes=new Set(
+[...document.querySelectorAll('.pdf-ativo-checkbox:checked')]
+.map(x=>x.value)
+)
+let ativos=obterAtivosDisponiveisPDF()
+.filter(a=>{
+if(!busca)return true
+return(
+a.codigo.toLowerCase().includes(busca)||
+a.empresa.toLowerCase().includes(busca)
+)
+})
+if(!ativos.length){
+box.innerHTML='<div class="pdf-sem-ativos">Nenhum ativo encontrado.</div>'
+return
+}
+box.innerHTML=ativos.map(a=>`
+<label class="pdf-ativo-item">
+<input
+type="checkbox"
+class="pdf-ativo-checkbox"
+value="${escaparHTML(a.codigo)}"
+${selecionadosAntes.has(a.codigo)?'checked':''}
+${desabilitado?'disabled':''}
+onchange="atualizarResumoFiltrosPDF()">
+<span class="pdf-ativo-dados">
+<strong>${escaparHTML(a.codigo)}</strong>
+<span>${escaparHTML(a.empresa)}</span>
+</span>
+</label>
+`).join('')
+}
+/*=========================================================
+062 FILTRAR ATIVOS PDF
+=========================================================*/
+function filtrarAtivosPDF(){
+renderAtivosPDF()
+}
+/*=========================================================
+063 MARCAR TODOS OS ATIVOS PDF
+=========================================================*/
+function marcarTodosAtivosPDF(){
+document.querySelectorAll('.pdf-ativo-checkbox').forEach(c=>{
+if(!c.disabled)c.checked=true
+})
+atualizarResumoFiltrosPDF()
+}
+/*=========================================================
+064 DESMARCAR TODOS OS ATIVOS PDF
+=========================================================*/
+function desmarcarTodosAtivosPDF(){
+document.querySelectorAll('.pdf-ativo-checkbox').forEach(c=>{
+if(!c.disabled)c.checked=false
+})
+atualizarResumoFiltrosPDF()
+}
+/*=========================================================
+065 OBTER FILTROS DO PDF
+=========================================================*/
+function obterFiltrosPDF(){
+let todoPeriodo=document.getElementById('pdfTodoPeriodo')?.checked!==false
+let todosAtivos=document.getElementById('pdfTodosAtivos')?.checked!==false
+let dataInicial=todoPeriodo
+?''
+:String(document.getElementById('pdfDataInicial')?.value||'')
+let dataFinal=todoPeriodo
+?''
+:String(document.getElementById('pdfDataFinal')?.value||'')
+let ativos=todosAtivos
+?[]
+:[...document.querySelectorAll('.pdf-ativo-checkbox:checked')]
+.map(c=>String(c.value||'').trim().toUpperCase())
+return{
+todoPeriodo,
+todosAtivos,
+dataInicial,
+dataFinal,
+ativos
+}
+}
+/*=========================================================
+066 VALIDAR FILTROS PDF
+=========================================================*/
+function validarFiltrosPDF(f){
+if(!f.todoPeriodo){
+if(!f.dataInicial||!f.dataFinal){
+alert('Informe a data inicial e a data final do relatório.')
+return false
+}
+if(f.dataInicial>f.dataFinal){
+alert('A data inicial não pode ser posterior à data final.')
+return false
+}
+}
+if(!f.todosAtivos&&!f.ativos.length){
+alert('Selecione pelo menos uma ação/ativo para gerar o relatório.')
+return false
+}
+return true
+}
+/*=========================================================
+067 TESTAR REGISTRO NO PERÍODO
+=========================================================*/
+function registroNoPeriodoPDF(data,f){
+if(f.todoPeriodo)return true
+let d=String(data||'').slice(0,10)
+if(!d)return false
+return d>=f.dataInicial&&d<=f.dataFinal
+}
+/*=========================================================
+068 TESTAR ATIVO SELECIONADO
+=========================================================*/
+function ativoSelecionadoPDF(codigo,f){
+if(f.todosAtivos)return true
+return f.ativos.includes(
+String(codigo||'').trim().toUpperCase()
+)
+}
+/*=========================================================
+069 FILTRAR OPERAÇÕES PARA PDF
+=========================================================*/
+function obterOperacoesFiltradasPDF(f){
+return OPERACOES.filter(o=>
+registroNoPeriodoPDF(o.data,f)&&
+ativoSelecionadoPDF(o.codigo,f)
+)
+}
+/*=========================================================
+070 CALCULAR DADOS FILTRADOS DO PDF
+=========================================================*/
+function calcularPDF(f){
+let originais=OPERACOES
+try{
+OPERACOES=obterOperacoesFiltradasPDF(f)
+return calcular()
+}finally{
+OPERACOES=originais
+}
+}
+/*=========================================================
+071 ATUALIZAR RESUMO DOS FILTROS PDF
+=========================================================*/
+function atualizarResumoFiltrosPDF(){
+let f=obterFiltrosPDF()
+let periodo=document.getElementById('pdfResumoPeriodo')
+let ativos=document.getElementById('pdfResumoAtivos')
+let conteudo=document.getElementById('pdfResumoConteudo')
+let descricao=document.getElementById('pdfPeriodoDescricao')
+if(periodo){
+periodo.textContent=f.todoPeriodo
+?'Todo o período'
+:(f.dataInicial&&f.dataFinal
+?dataBR(f.dataInicial)+' a '+dataBR(f.dataFinal)
+:'Defina as datas')
+}
+if(descricao){
+descricao.textContent=f.todoPeriodo
+?'Todos os registros serão considerados.'
+:(f.dataInicial&&f.dataFinal
+?'Serão considerados registros de '+dataBR(f.dataInicial)+' até '+dataBR(f.dataFinal)+'.'
+:'Informe a data inicial e final.')
+}
+if(ativos){
+ativos.textContent=f.todosAtivos
+?'Todas'
+:(f.ativos.length
+?f.ativos.join(', ')
+:'Nenhuma selecionada')
+}
+if(conteudo){
+let nomes=[]
+if(document.getElementById('pdfResumo')?.checked)nomes.push('Resumo')
+if(document.getElementById('pdfCarteira')?.checked)nomes.push('Carteira')
+if(document.getElementById('pdfOperacoes')?.checked)nomes.push('Operações')
+if(document.getElementById('pdfResultados')?.checked)nomes.push('Resultados')
+if(document.getElementById('pdfTaxas')?.checked)nomes.push('Taxas')
+if(document.getElementById('pdfIRRF')?.checked)nomes.push('IRRF')
+conteudo.textContent=nomes.length?nomes.join(', '):'Nenhum'
+}
+}
+/*=========================================================
 039 EXPORTAR PDF SELECIONADO
 =========================================================*/
 async function exportarPDFSelecionado(){
@@ -1368,6 +1613,10 @@ if(!CALC){
 alert('Aguarde o carregamento dos dados.')
 return
 }
+let filtrosPDF=obterFiltrosPDF()
+if(!validarFiltrosPDF(filtrosPDF))return
+let OPERACOES_PDF=obterOperacoesFiltradasPDF(filtrosPDF)
+let CALC_PDF=calcularPDF(filtrosPDF)
 let selecionados=obterPaineisPDFSelecionados()
 if(!existePainelPDFSelecionado(selecionados)){
 alert('Marque pelo menos um painel para gerar o PDF.')
