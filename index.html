@@ -2,21 +2,31 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5,user-scalable=yes">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5,user-scalable=yes,viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
-<title>Nemésio G Brandão | Controle de Ações</title>
+<meta name="application-name" content="Ações Brandão">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ações Brandão">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Ações Brandão</title>
+<link rel="manifest" href="./manifest.json?v=20260825-1">
+<link rel="apple-touch-icon" sizes="192x192" href="./icon-192.png?v=20260825-1">
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png?v=20260825-1">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png?v=20260825-1">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f1f5f9;color:#0f172a}
+html{-webkit-text-size-adjust:100%;background:#f1f5f9}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f1f5f9;color:#0f172a;padding-bottom:env(safe-area-inset-bottom)}
 button,input,select{font:inherit}
-.topo{background:#0f172a;color:#fff;padding:22px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.topo{background:#0f172a;color:#fff;padding:calc(22px + env(safe-area-inset-top)) 28px 22px;display:flex;justify-content:space-between;align-items:center;gap:20px}
 .topo h1{margin:0;font-size:22px}
 .topo p{margin:4px 0 0;color:#94a3b8;font-size:13px}
 .status{font-size:12px;background:#1e293b;padding:8px 12px;border-radius:999px;white-space:nowrap}
-.nav{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 24px;display:flex;gap:6px;overflow:auto;position:sticky;top:0;z-index:10}
+.nav{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 24px;display:flex;gap:6px;overflow:auto;position:sticky;top:0;z-index:10;-webkit-overflow-scrolling:touch}
 .nav button{border:0;background:transparent;padding:15px 16px;font-weight:700;color:#64748b;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
 .nav button.ativo{color:#0f172a;border-color:#2563eb}
 .wrap{max-width:1500px;margin:auto;padding:22px}
@@ -49,7 +59,7 @@ button,input,select{font:inherit}
 .btn-olho:active{transform:scale(.96)}
 .valor-sensivel{letter-spacing:1px}
 .valores-ocultos{color:#64748b!important}
-.tablewrap{overflow:auto;max-height:650px}
+.tablewrap{overflow:auto;max-height:650px;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{position:sticky;top:0;background:#f8fafc;text-align:left;color:#475569;padding:11px;border-bottom:1px solid #e2e8f0;white-space:nowrap;z-index:1}
 td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
@@ -65,380 +75,101 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .alert{padding:10px 12px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:12px;margin-bottom:12px}
 .right{text-align:right}
 .acoes-form{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-/*=========================================================
-TABELAS COMPACTAS - OPERAÇÕES E TAXAS
-=========================================================*/
-#tabelaOperacoes .tablewrap,
-#tabelaTaxas .tablewrap{
-max-height:650px
-}
-#tabelaOperacoes table,
-#tabelaTaxas table{
-font-size:12px
-}
-#tabelaOperacoes th,
-#tabelaTaxas th{
-padding:7px 9px;
-height:32px;
-font-size:11px;
-line-height:1.15
-}
-#tabelaOperacoes td,
-#tabelaTaxas td{
-padding:5px 9px;
-height:34px;
-line-height:1.15;
-vertical-align:middle
-}
-#tabelaOperacoes tbody tr:hover,
-#tabelaTaxas tbody tr:hover{
-background:#f8fafc
-}
-.btn-excluir-mini{
-border:0;
-border-radius:6px;
-padding:4px 8px;
-min-height:25px;
-height:25px;
-background:#fee2e2;
-color:#b91c1c;
-font-size:10px;
-font-weight:800;
-line-height:1;
-cursor:pointer
-}
-.btn-excluir-mini:hover{
-background:#fecaca;
-color:#991b1b
-}
-#tabelaOperacoes .tag{
-padding:3px 7px;
-font-size:10px
-}
-#tabelaOperacoes td:last-child,
-#tabelaTaxas td:last-child{
-width:62px;
-text-align:center
-}
-/*=========================================================
-PAINEL TAXAS - TABELA COMPACTA
-=========================================================*/
-#tabelaTaxas table{
-width:100%;
-table-layout:fixed;
-font-size:12px
-}
-#tabelaTaxas th{
-padding:7px 10px;
-height:32px;
-font-size:11px;
-vertical-align:middle
-}
-#tabelaTaxas td{
-padding:5px 10px;
-height:34px;
-vertical-align:middle
-}
-#tabelaTaxas th:nth-child(1),
-#tabelaTaxas td:nth-child(1){
-width:16%;
-text-align:left
-}
-#tabelaTaxas th:nth-child(2),
-#tabelaTaxas td:nth-child(2){
-width:18%;
-text-align:right
-}
-#tabelaTaxas th:nth-child(3),
-#tabelaTaxas td:nth-child(3){
-width:18%;
-text-align:right
-}
-#tabelaTaxas th:nth-child(4),
-#tabelaTaxas td:nth-child(4){
-width:20%;
-text-align:right
-}
-#tabelaTaxas th:nth-child(5),
-#tabelaTaxas td:nth-child(5){
-width:18%;
-text-align:right
-}
-#tabelaTaxas th:nth-child(6),
-#tabelaTaxas td:nth-child(6){
-width:10%;
-text-align:center
-}
-#tabelaTaxas tbody tr:hover{
-background:#f8fafc
-}
-#tabelaTaxas th:nth-child(4),
-#tabelaTaxas td:nth-child(4){
-background:#f8fafc
-}
-#tabelaTaxas td:nth-child(4){
-font-weight:800;
-color:#0f172a
-}
-.irrf-valor{
-font-weight:700;
-color:#64748b
-}
-.btn-excluir-mini{
-border:0;
-border-radius:6px;
-padding:4px 8px;
-height:25px;
-min-height:25px;
-background:#fee2e2;
-color:#b91c1c;
-font-size:10px;
-font-weight:800;
-line-height:1;
-cursor:pointer
-}
-.btn-excluir-mini:hover{
-background:#fecaca;
-color:#991b1b
-}
-/*=========================================================
-PAINEL CARTEIRA - COLUNAS ORGANIZADAS
-=========================================================*/
-#tabelaCarteira .tablewrap,
-#resumoPainel .tablewrap{
-width:100%;
-overflow-x:auto
-}
-#tabelaCarteira table,
-#resumoPainel table{
-width:100%;
-table-layout:fixed;
-border-collapse:collapse;
-font-size:12px
-}
-#tabelaCarteira th,
-#resumoPainel th{
-height:36px;
-padding:8px 10px;
-background:#f8fafc;
-color:#475569;
-font-size:11px;
-font-weight:800;
-vertical-align:middle;
-border-bottom:1px solid #cbd5e1
-}
-#tabelaCarteira td,
-#resumoPainel td{
-height:36px;
-padding:6px 10px;
-vertical-align:middle;
-border-bottom:1px solid #eef2f7
-}
-#tabelaCarteira tbody tr:hover,
-#resumoPainel tbody tr:hover{
-background:#f8fafc
-}
-/* EMPRESA */
-#tabelaCarteira th:nth-child(1),
-#tabelaCarteira td:nth-child(1),
-#resumoPainel th:nth-child(1),
-#resumoPainel td:nth-child(1){
-width:25%;
-text-align:left
-}
-/* CÓDIGO */
-#tabelaCarteira th:nth-child(2),
-#tabelaCarteira td:nth-child(2),
-#resumoPainel th:nth-child(2),
-#resumoPainel td:nth-child(2){
-width:10%;
-text-align:left
-}
-/* QUANTIDADE */
-#tabelaCarteira th:nth-child(3),
-#tabelaCarteira td:nth-child(3),
-#resumoPainel th:nth-child(3),
-#resumoPainel td:nth-child(3){
-width:11%;
-text-align:right
-}
-/* CUSTO ATUAL */
-#tabelaCarteira th:nth-child(4),
-#tabelaCarteira td:nth-child(4),
-#resumoPainel th:nth-child(4),
-#resumoPainel td:nth-child(4){
-width:15%;
-text-align:right
-}
-/* PREÇO MÉDIO */
-#tabelaCarteira th:nth-child(5),
-#tabelaCarteira td:nth-child(5),
-#resumoPainel th:nth-child(5),
-#resumoPainel td:nth-child(5){
-width:14%;
-text-align:right
-}
-/* LUCRO/PREJUÍZO */
-#tabelaCarteira th:nth-child(6),
-#tabelaCarteira td:nth-child(6),
-#resumoPainel th:nth-child(6),
-#resumoPainel td:nth-child(6){
-width:16%;
-text-align:right
-}
-/* OPERAÇÕES */
-#tabelaCarteira th:nth-child(7),
-#tabelaCarteira td:nth-child(7),
-#resumoPainel th:nth-child(7),
-#resumoPainel td:nth-child(7){
-width:9%;
-text-align:right
-}
-.carteira-empresa{
-font-weight:600;
-color:#334155;
-overflow:hidden;
-text-overflow:ellipsis
-}
-.carteira-codigo{
-color:#0f172a
-}
-.carteira-qtd{
-font-variant-numeric:tabular-nums
-}
-.carteira-valor{
-font-variant-numeric:tabular-nums;
-white-space:nowrap
-}
-.carteira-resultado{
-font-weight:800;
-font-variant-numeric:tabular-nums;
-white-space:nowrap
-}
-.carteira-operacoes{
-font-weight:700;
-color:#64748b;
-font-variant-numeric:tabular-nums
-}
-/*=========================================================
-PAINEL RESULTADOS - COLUNAS ORGANIZADAS
-=========================================================*/
-#tabelaMensal .tablewrap{
-width:100%;
-overflow-x:auto
-}
-#tabelaMensal table{
-width:100%;
-table-layout:fixed;
-border-collapse:collapse;
-font-size:12px
-}
-#tabelaMensal th{
-height:36px;
-padding:8px 12px;
-background:#f8fafc;
-color:#475569;
-font-size:11px;
-font-weight:800;
-vertical-align:middle;
-border-bottom:1px solid #cbd5e1
-}
-#tabelaMensal td{
-height:38px;
-padding:6px 12px;
-vertical-align:middle;
-border-bottom:1px solid #eef2f7;
-font-variant-numeric:tabular-nums
-}
-#tabelaMensal tbody tr:hover{
-background:#f8fafc
-}
-#tabelaMensal th:nth-child(1),
-#tabelaMensal td:nth-child(1){
-width:13%;
-text-align:left
-}
-#tabelaMensal th:nth-child(2),
-#tabelaMensal td:nth-child(2){
-width:17%;
-text-align:right
-}
-#tabelaMensal th:nth-child(3),
-#tabelaMensal td:nth-child(3){
-width:17%;
-text-align:right
-}
-#tabelaMensal th:nth-child(4),
-#tabelaMensal td:nth-child(4){
-width:19%;
-text-align:right
-}
-#tabelaMensal th:nth-child(5),
-#tabelaMensal td:nth-child(5){
-width:14%;
-text-align:right
-}
-#tabelaMensal th:nth-child(6),
-#tabelaMensal td:nth-child(6){
-width:20%;
-text-align:right
-}
-.resultado-mes{
-color:#0f172a;
-text-transform:capitalize;
-white-space:nowrap
-}
-.resultado-valor{
-color:#334155;
-white-space:nowrap
-}
-.resultado-bruto{
-font-weight:700;
-white-space:nowrap
-}
-.resultado-taxas{
-color:#64748b;
-font-weight:600;
-white-space:nowrap
-}
-.resultado-liquido{
-font-weight:900;
-white-space:nowrap
-}
-#tabelaMensal th:nth-child(6),
-#tabelaMensal td:nth-child(6){
-background:#f8fafc
-}
-  
+.cabecalho-painel{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:14px}
+.cabecalho-painel h2{margin:0;font-size:20px}
+.exportacoes{display:flex;align-items:center;gap:8px}
+.btn-exportar{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:9px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer}
+.btn-exportar:hover{background:#f8fafc}
+#tabelaOperacoes .tablewrap,#tabelaTaxas .tablewrap{max-height:650px}
+#tabelaOperacoes table,#tabelaTaxas table{font-size:12px}
+#tabelaOperacoes th,#tabelaTaxas th{padding:7px 9px;height:32px;font-size:11px;line-height:1.15}
+#tabelaOperacoes td,#tabelaTaxas td{padding:5px 9px;height:34px;line-height:1.15;vertical-align:middle}
+#tabelaOperacoes tbody tr:hover,#tabelaTaxas tbody tr:hover{background:#f8fafc}
+.btn-excluir-mini{border:0;border-radius:6px;padding:4px 8px;min-height:25px;height:25px;background:#fee2e2;color:#b91c1c;font-size:10px;font-weight:800;line-height:1;cursor:pointer}
+.btn-excluir-mini:hover{background:#fecaca;color:#991b1b}
+#tabelaOperacoes .tag{padding:3px 7px;font-size:10px}
+#tabelaOperacoes td:last-child,#tabelaTaxas td:last-child{width:62px;text-align:center}
+#tabelaTaxas table{width:100%;table-layout:fixed;font-size:12px}
+#tabelaTaxas th{padding:7px 10px;height:32px;font-size:11px;vertical-align:middle}
+#tabelaTaxas td{padding:5px 10px;height:34px;vertical-align:middle}
+#tabelaTaxas th:nth-child(1),#tabelaTaxas td:nth-child(1){width:22%;text-align:left}
+#tabelaTaxas th:nth-child(2),#tabelaTaxas td:nth-child(2){width:24%;text-align:right}
+#tabelaTaxas th:nth-child(3),#tabelaTaxas td:nth-child(3){width:24%;text-align:right}
+#tabelaTaxas th:nth-child(4),#tabelaTaxas td:nth-child(4){width:20%;text-align:right;background:#f8fafc}
+#tabelaTaxas th:nth-child(5),#tabelaTaxas td:nth-child(5){width:10%;text-align:center}
+#tabelaTaxas td:nth-child(4){font-weight:800;color:#0f172a}
+#tabelaCarteira .tablewrap,#resumoPainel .tablewrap{width:100%;overflow-x:auto}
+#tabelaCarteira table,#resumoPainel table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}
+#tabelaCarteira th,#resumoPainel th{height:36px;padding:8px 10px;background:#f8fafc;color:#475569;font-size:11px;font-weight:800;vertical-align:middle;border-bottom:1px solid #cbd5e1}
+#tabelaCarteira td,#resumoPainel td{height:36px;padding:6px 10px;vertical-align:middle;border-bottom:1px solid #eef2f7}
+#tabelaCarteira tbody tr:hover,#resumoPainel tbody tr:hover{background:#f8fafc}
+#tabelaCarteira th:nth-child(1),#tabelaCarteira td:nth-child(1),#resumoPainel th:nth-child(1),#resumoPainel td:nth-child(1){width:25%;text-align:left}
+#tabelaCarteira th:nth-child(2),#tabelaCarteira td:nth-child(2),#resumoPainel th:nth-child(2),#resumoPainel td:nth-child(2){width:10%;text-align:left}
+#tabelaCarteira th:nth-child(3),#tabelaCarteira td:nth-child(3),#resumoPainel th:nth-child(3),#resumoPainel td:nth-child(3){width:11%;text-align:right}
+#tabelaCarteira th:nth-child(4),#tabelaCarteira td:nth-child(4),#resumoPainel th:nth-child(4),#resumoPainel td:nth-child(4){width:15%;text-align:right}
+#tabelaCarteira th:nth-child(5),#tabelaCarteira td:nth-child(5),#resumoPainel th:nth-child(5),#resumoPainel td:nth-child(5){width:14%;text-align:right}
+#tabelaCarteira th:nth-child(6),#tabelaCarteira td:nth-child(6),#resumoPainel th:nth-child(6),#resumoPainel td:nth-child(6){width:16%;text-align:right}
+#tabelaCarteira th:nth-child(7),#tabelaCarteira td:nth-child(7),#resumoPainel th:nth-child(7),#resumoPainel td:nth-child(7){width:9%;text-align:right}
+.carteira-empresa{font-weight:600;color:#334155;overflow:hidden;text-overflow:ellipsis}
+.carteira-codigo{color:#0f172a}
+.carteira-qtd{font-variant-numeric:tabular-nums}
+.carteira-valor{font-variant-numeric:tabular-nums;white-space:nowrap}
+.carteira-resultado{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.carteira-operacoes{font-weight:700;color:#64748b;font-variant-numeric:tabular-nums}
+#tabelaMensal .tablewrap{width:100%;overflow-x:auto}
+#tabelaMensal table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}
+#tabelaMensal th{height:36px;padding:8px 12px;background:#f8fafc;color:#475569;font-size:11px;font-weight:800;vertical-align:middle;border-bottom:1px solid #cbd5e1}
+#tabelaMensal td{height:38px;padding:6px 12px;vertical-align:middle;border-bottom:1px solid #eef2f7;font-variant-numeric:tabular-nums}
+#tabelaMensal tbody tr:hover{background:#f8fafc}
+#tabelaMensal th:nth-child(1),#tabelaMensal td:nth-child(1){width:13%;text-align:left}
+#tabelaMensal th:nth-child(2),#tabelaMensal td:nth-child(2){width:17%;text-align:right}
+#tabelaMensal th:nth-child(3),#tabelaMensal td:nth-child(3){width:17%;text-align:right}
+#tabelaMensal th:nth-child(4),#tabelaMensal td:nth-child(4){width:19%;text-align:right}
+#tabelaMensal th:nth-child(5),#tabelaMensal td:nth-child(5){width:14%;text-align:right}
+#tabelaMensal th:nth-child(6),#tabelaMensal td:nth-child(6){width:20%;text-align:right;background:#f8fafc}
+.resultado-mes{color:#0f172a;text-transform:capitalize;white-space:nowrap}
+.resultado-valor{color:#334155;white-space:nowrap}
+.resultado-bruto{font-weight:700;white-space:nowrap}
+.resultado-taxas{color:#64748b;font-weight:600;white-space:nowrap}
+.resultado-liquido{font-weight:900;white-space:nowrap}
+.form-taxas{grid-template-columns:180px 1fr 1fr auto}
+.form-irrf{grid-template-columns:180px 1fr auto}
+#tabelaIRRF .tablewrap{max-height:650px}
+#tabelaIRRF table{width:100%;table-layout:fixed;font-size:12px}
+#tabelaIRRF th{padding:7px 10px;height:32px;font-size:11px}
+#tabelaIRRF td{padding:5px 10px;height:34px}
+#tabelaIRRF th:nth-child(1),#tabelaIRRF td:nth-child(1){width:35%;text-align:left}
+#tabelaIRRF th:nth-child(2),#tabelaIRRF td:nth-child(2){width:45%;text-align:right}
+#tabelaIRRF th:nth-child(3),#tabelaIRRF td:nth-child(3){width:20%;text-align:center}
+#tabelaIRRF tbody tr:hover{background:#f8fafc}
+.total-irrf{display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:14px 10px 4px;border-top:2px solid #e2e8f0}
+.total-irrf span{font-size:11px;font-weight:800;color:#64748b}
+.total-irrf strong{font-size:17px;color:#0f172a}
 @media(max-width:1100px){
 .kpis{grid-template-columns:repeat(3,1fr)}
 .grid2{grid-template-columns:1fr}
 .form{grid-template-columns:repeat(3,1fr)}
+.form-taxas{grid-template-columns:repeat(3,1fr)}
+.form-irrf{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:650px){
-.topo{padding:18px;flex-direction:column;align-items:flex-start}
+.topo{padding:calc(18px + env(safe-area-inset-top)) 18px 18px;flex-direction:column;align-items:flex-start}
+.topo h1{font-size:19px}
 .wrap{padding:12px}
 .nav{padding:0 8px}
+.nav button{padding:13px 12px}
 .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-.form{grid-template-columns:1fr}
+.form,.form-taxas,.form-irrf{grid-template-columns:1fr}
 .kpi{padding:14px}
 .kpi b{font-size:18px}
 #opEmpresa,#opCodigo{font-size:16px}
 .chartbox{height:270px}
+.card{padding:14px}
+.cabecalho-painel{align-items:center}
+#tabelaCarteira table,#resumoPainel table{min-width:850px}
+#tabelaMensal table{min-width:760px}
+#tabelaOperacoes table{min-width:760px}
 }
-
-.form-taxas{grid-template-columns:180px 1fr 1fr auto}
-.form-irrf{grid-template-columns:180px 1fr auto}
-.total-irrf{display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:14px 10px 4px;border-top:2px solid #e2e8f0}
-.total-irrf span{font-size:11px;font-weight:800;color:#64748b}
-.total-irrf strong{font-size:17px;color:#0f172a}
-#tabelaIRRF table{width:100%;table-layout:fixed}
-#tabelaIRRF th:nth-child(1),#tabelaIRRF td:nth-child(1){width:35%;text-align:left}
-#tabelaIRRF th:nth-child(2),#tabelaIRRF td:nth-child(2){width:45%;text-align:right}
-#tabelaIRRF th:nth-child(3),#tabelaIRRF td:nth-child(3){width:20%;text-align:center}
-@media(max-width:650px){.form-taxas,.form-irrf{grid-template-columns:1fr}}
-
-  
 </style>
 </head>
 <body>
@@ -466,9 +197,7 @@ PAINEL
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>VALOR INVESTIDO</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
-<span class="icone-visibilidade">👁</span>
-</button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
 </div>
 <b id="kInvestido" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
@@ -479,9 +208,7 @@ PAINEL
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>LUCRO/PREJUÍZO ACUMULADO</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
-<span class="icone-visibilidade">👁</span>
-</button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
 </div>
 <b id="kLucro" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
@@ -492,18 +219,14 @@ PAINEL
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>COMPRAS</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
-<span class="icone-visibilidade">👁</span>
-</button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
 </div>
 <b id="kCompras" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>VENDAS</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
-<span class="icone-visibilidade">👁</span>
-</button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
 </div>
 <b id="kVendas" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
@@ -511,15 +234,11 @@ PAINEL
 <div class="grid2">
 <div class="card">
 <h3>Resultado realizado por mês</h3>
-<div class="chartbox">
-<canvas id="grafResultado"></canvas>
-</div>
+<div class="chartbox"><canvas id="grafResultado"></canvas></div>
 </div>
 <div class="card">
 <h3>Capital investido por ativo</h3>
-<div class="chartbox">
-<canvas id="grafCarteira"></canvas>
-</div>
+<div class="chartbox"><canvas id="grafCarteira"></canvas></div>
 </div>
 </div>
 <div class="card" style="margin-top:14px">
@@ -543,43 +262,14 @@ OPERAÇÕES
 <section id="operacoes" class="aba">
 <div class="card">
 <h3>Nova operação</h3>
-<div class="alert">
-Selecione a empresa ou o código da ação. Os dois campos são vinculados automaticamente. Para incluir uma nova empresa/ação, utilize <b>+ Novo ativo</b>.
-</div>
+<div class="alert">Selecione a empresa ou o código da ação. Os dois campos são vinculados automaticamente. Para incluir uma nova empresa/ação, utilize <b>+ Novo ativo</b>.</div>
 <div class="form">
-<label>
-Data
-<input id="opData" type="date">
-</label>
-<label>
-Empresa
-<select id="opEmpresa" onchange="selecionarEmpresa()">
-<option value="">Selecione a empresa</option>
-<option value="__NOVO__">➕ CADASTRAR NOVO ATIVO</option>
-</select>
-</label>
-<label>
-Código
-<select id="opCodigo" onchange="selecionarCodigo()">
-<option value="">Selecione o código</option>
-<option value="__NOVO__">➕ CADASTRAR NOVO ATIVO</option>
-</select>
-</label>
-<label>
-Tipo
-<select id="opTipo">
-<option value="Compra">Compra</option>
-<option value="Venda">Venda</option>
-</select>
-</label>
-<label>
-Quantidade
-<input id="opQtd" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0">
-</label>
-<label>
-Preço unitário
-<input id="opPreco" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00">
-</label>
+<label>Data<input id="opData" type="date"></label>
+<label>Empresa<select id="opEmpresa" onchange="selecionarEmpresa()"><option value="">Selecione a empresa</option><option value="__NOVO__">➕ CADASTRAR NOVO ATIVO</option></select></label>
+<label>Código<select id="opCodigo" onchange="selecionarCodigo()"><option value="">Selecione o código</option><option value="__NOVO__">➕ CADASTRAR NOVO ATIVO</option></select></label>
+<label>Tipo<select id="opTipo"><option value="Compra">Compra</option><option value="Venda">Venda</option></select></label>
+<label>Quantidade<input id="opQtd" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0"></label>
+<label>Preço unitário<input id="opPreco" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00"></label>
 </div>
 <div class="acoes-form">
 <button class="btn" type="button" onclick="salvarOperacao()">Salvar operação</button>
@@ -589,11 +279,7 @@ Preço unitário
 <div class="card" style="margin-top:14px">
 <div class="toolbar">
 <input id="buscaOp" type="search" placeholder="Buscar empresa/código" oninput="renderOperacoes()">
-<select id="tipoOp" onchange="renderOperacoes()">
-<option value="">Todos os tipos</option>
-<option value="Compra">Compra</option>
-<option value="Venda">Venda</option>
-</select>
+<select id="tipoOp" onchange="renderOperacoes()"><option value="">Todos os tipos</option><option value="Compra">Compra</option><option value="Venda">Venda</option></select>
 </div>
 <div id="tabelaOperacoes"></div>
 </div>
@@ -622,9 +308,9 @@ TAXAS
 <h3>Registrar / atualizar taxas do dia</h3>
 <div class="form form-taxas">
 <label>Data<input id="txData" type="date"></label>
-<label>Liquidação<input id="txLiq" type="number" step="0.01" value="0"></label>
-<label>Negociação<input id="txNeg" type="number" step="0.01" value="0"></label>
-<div><button class="btn" onclick="salvarTaxa()">Salvar taxas</button></div>
+<label>Liquidação<input id="txLiq" type="number" step="0.01" min="0" inputmode="decimal" value="0"></label>
+<label>Negociação<input id="txNeg" type="number" step="0.01" min="0" inputmode="decimal" value="0"></label>
+<div><button class="btn" type="button" onclick="salvarTaxa()">Salvar taxas</button></div>
 </div>
 </div>
 <div class="card" style="margin-top:14px">
@@ -632,6 +318,9 @@ TAXAS
 <div id="tabelaTaxas"></div>
 </div>
 </section>
+<!-- =========================================================
+IRRF
+========================================================= -->
 <section id="irrf" class="aba">
 <div class="cabecalho-painel">
 <h2>IRRF</h2>
@@ -643,8 +332,8 @@ TAXAS
 <h3>Registrar / atualizar IRRF do dia</h3>
 <div class="form form-irrf">
 <label>Data<input id="irrfData" type="date"></label>
-<label>IRRF<input id="irrfValor" type="number" step="0.01" value="0"></label>
-<div><button class="btn" onclick="salvarIRRF()">Salvar IRRF</button></div>
+<label>IRRF<input id="irrfValor" type="number" step="0.01" min="0" inputmode="decimal" value="0"></label>
+<div><button class="btn" type="button" onclick="salvarIRRF()">Salvar IRRF</button></div>
 </div>
 </div>
 <div class="card" style="margin-top:14px">
@@ -653,6 +342,6 @@ TAXAS
 </div>
 </section>
 </main>
-<script src="./app.js?v=20260824-4"></script>
+<script src="./app.js?v=20260825-1"></script>
 </body>
 </html>
