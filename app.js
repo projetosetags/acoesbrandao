@@ -400,6 +400,7 @@ renderCarteira()
 renderOperacoes()
 renderMensal()
 renderTaxas()
+renderIRRF()
 renderGraficos()
 }
 /*=========================================================
@@ -500,24 +501,36 @@ box.innerHTML=tabela(['Mês','Compras','Vendas','Resultado Bruto','Taxas','Resul
 016 RENDERIZAR TAXAS
 =========================================================*/
 function renderTaxas(){
-let dados=[...TAXAS].sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')))
+let dados=[...TAXAS].filter(t=>(Number(t.taxa_liquidacao)||0)!==0||(Number(t.taxa_negociacao)||0)!==0).sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')))
 let rows=dados.map(t=>{
 let liquidacao=Number(t.taxa_liquidacao)||0
 let negociacao=Number(t.taxa_negociacao)||0
-let irrf=Number(t.irrf)||0
 let total=liquidacao+negociacao
 return `<tr>
 <td><b>${dataBR(t.data)}</b></td>
 <td class="right">${brl(liquidacao)}</td>
 <td class="right">${brl(negociacao)}</td>
 <td class="right"><b>${brl(total)}</b></td>
-<td class="right">${brl(irrf)}</td>
-<td><button class="btn-excluir-mini" type="button" onclick="excluirTaxa(${Number(t.id)})" title="Excluir registro">Excluir</button></td>
+<td><button class="btn-excluir-mini" type="button" onclick="excluirTaxa(${Number(t.id)})">Excluir</button></td>
 </tr>`
 })
 let box=document.getElementById('tabelaTaxas')
+if(box)box.innerHTML=tabela(['Data','Liquidação','Negociação','Total',''],rows)
+}
+/*=========================================================
+017 RENDERIZAR IRRF
+=========================================================*/
+function renderIRRF(){
+let dados=[...TAXAS].filter(t=>(Number(t.irrf)||0)!==0).sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')))
+let totalIRRF=dados.reduce((s,t)=>s+(Number(t.irrf)||0),0)
+let rows=dados.map(t=>`<tr>
+<td><b>${dataBR(t.data)}</b></td>
+<td class="right"><b>${brl(t.irrf)}</b></td>
+<td><button class="btn-excluir-mini" type="button" onclick="excluirIRRF(${Number(t.id)})">Excluir</button></td>
+</tr>`)
+let box=document.getElementById('tabelaIRRF')
 if(box){
-box.innerHTML=tabela(['Data','Liquidação','Negociação','Total','IRRF',''],rows)
+box.innerHTML=tabela(['Data','IRRF',''],rows)+`<div class="total-irrf"><span>TOTAL IRRF</span><strong>${brl(totalIRRF)}</strong></div>`
 }
 }
 /*=========================================================
@@ -834,38 +847,102 @@ async function salvarTaxa(){
 let data=document.getElementById('txData')
 let liq=document.getElementById('txLiq')
 let neg=document.getElementById('txNeg')
-let irrf=document.getElementById('txIrrf')
-let obj={
-data:data?.value||'',
-taxa_liquidacao:Number(liq?.value||0),
-taxa_negociacao:Number(neg?.value||0),
-irrf:Number(irrf?.value||0)
-}
-if(!obj.data){
+let dataValor=data?.value||''
+if(!dataValor){
 alert('Informe a data.')
 return
 }
+let liquidacao=Number(liq?.value||0)
+let negociacao=Number(neg?.value||0)
 avisar('Salvando taxas…')
-let r=await db.from('nemesio_taxas').upsert(obj,{onConflict:'data'})
+let existente=TAXAS.find(t=>String(t.data).slice(0,10)===dataValor)
+let r
+if(existente){
+r=await db.from('nemesio_taxas').update({
+taxa_liquidacao:liquidacao,
+taxa_negociacao:negociacao
+}).eq('id',existente.id)
+}else{
+r=await db.from('nemesio_taxas').insert({
+data:dataValor,
+taxa_liquidacao:liquidacao,
+taxa_negociacao:negociacao,
+irrf:0
+})
+}
 if(r.error){
 console.error('Erro ao salvar taxas:',r.error)
 alert(r.error.message)
 avisar('Erro ao salvar taxas')
 return
 }
+if(liq)liq.value='0'
+if(neg)neg.value='0'
 await carregar()
 }
 /*=========================================================
-021 EXCLUIR TAXA
+023 EXCLUIR TAXA
 =========================================================*/
 async function excluirTaxa(id){
-if(!confirm('Tem certeza que deseja excluir estas taxas?'))return
+if(!confirm('Excluir as taxas de Liquidação e Negociação desta data?'))return
 avisar('Excluindo taxas…')
-let r=await db.from('nemesio_taxas').delete().eq('id',id)
+let r=await db.from('nemesio_taxas').update({
+taxa_liquidacao:0,
+taxa_negociacao:0
+}).eq('id',id)
 if(r.error){
-console.error('Erro ao excluir taxas:',r.error)
+console.error(r.error)
 alert(r.error.message)
-avisar('Erro ao excluir taxas')
+return
+}
+await carregar()
+}
+/*=========================================================
+022 SALVAR IRRF
+=========================================================*/
+async function salvarIRRF(){
+let data=document.getElementById('irrfData')
+let valor=document.getElementById('irrfValor')
+let dataValor=data?.value||''
+let irrf=Number(valor?.value||0)
+if(!dataValor){
+alert('Informe a data.')
+return
+}
+avisar('Salvando IRRF…')
+let existente=TAXAS.find(t=>String(t.data).slice(0,10)===dataValor)
+let r
+if(existente){
+r=await db.from('nemesio_taxas').update({irrf}).eq('id',existente.id)
+}else{
+r=await db.from('nemesio_taxas').insert({
+data:dataValor,
+taxa_liquidacao:0,
+taxa_negociacao:0,
+irrf:irrf
+})
+}
+if(r.error){
+console.error('Erro ao salvar IRRF:',r.error)
+alert(r.error.message)
+avisar('Erro ao salvar IRRF')
+return
+}
+if(valor)valor.value='0'
+await carregar()
+}
+/*=========================================================
+024 EXCLUIR IRRF
+=========================================================*/
+async function excluirIRRF(id){
+if(!confirm('Excluir o IRRF desta data?'))return
+avisar('Excluindo IRRF…')
+let r=await db.from('nemesio_taxas').update({
+irrf:0
+}).eq('id',id)
+if(r.error){
+console.error(r.error)
+alert(r.error.message)
 return
 }
 await carregar()
@@ -876,6 +953,8 @@ await carregar()
 function inicializar(){
 let campoOpData=document.getElementById('opData')
 let campoTxData=document.getElementById('txData')
+let campoIrrfData=document.getElementById('irrfData')
+if(campoIrrfData)campoIrrfData.value=hoje()
 if(campoOpData)campoOpData.value=hoje()
 if(campoTxData)campoTxData.value=hoje()
 atualizarVisibilidadeValores()
