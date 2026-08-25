@@ -282,6 +282,28 @@ PAINEL/RESUMO
 <h3>Resumo da carteira atual</h3>
 <div id="resumoPainel"></div>
 </div>
+<div class="card" style="margin-top:14px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap">
+<div>
+<h3 style="margin:0 0 5px">Salvar relatório em PDF</h3>
+<p class="muted" style="margin:0">Escolha abaixo quais painéis deseja incluir no relatório.</p>
+</div>
+<button class="btn" type="button" onclick="exportarPDFSelecionado()">📄 Salvar PDF</button>
+</div>
+<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:16px">
+<label><input type="checkbox" id="pdfResumo" checked> Resumo</label>
+<label><input type="checkbox" id="pdfCarteira"> Carteira</label>
+<label><input type="checkbox" id="pdfOperacoes"> Operações</label>
+<label><input type="checkbox" id="pdfResultados"> Resultados</label>
+<label><input type="checkbox" id="pdfTaxas"> Taxas</label>
+<label><input type="checkbox" id="pdfIRRF"> IRRF</label>
+</div>
+<div style="display:flex;gap:8px;margin-top:14px">
+<button class="btn sec" type="button" onclick="marcarTodosPDF()">Marcar todos</button>
+<button class="btn sec" type="button" onclick="desmarcarTodosPDF()">Desmarcar todos</button>
+</div>
+</div>
+  
 </section>
 <!-- =========================================================
 CARTEIRA
@@ -366,7 +388,8 @@ IRRF
 <div id="tabelaIRRF"></div>
 </div>
 </section>
+
 </main>
-<script src="./app.js?v=20260825-2"></script>
+<script src="./app.js?v=20260825-1"></script>
 </body>
 </html>
