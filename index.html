@@ -426,6 +426,19 @@ background:#f8fafc
 #opEmpresa,#opCodigo{font-size:16px}
 .chartbox{height:270px}
 }
+
+.form-taxas{grid-template-columns:180px 1fr 1fr auto}
+.form-irrf{grid-template-columns:180px 1fr auto}
+.total-irrf{display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:14px 10px 4px;border-top:2px solid #e2e8f0}
+.total-irrf span{font-size:11px;font-weight:800;color:#64748b}
+.total-irrf strong{font-size:17px;color:#0f172a}
+#tabelaIRRF table{width:100%;table-layout:fixed}
+#tabelaIRRF th:nth-child(1),#tabelaIRRF td:nth-child(1){width:35%;text-align:left}
+#tabelaIRRF th:nth-child(2),#tabelaIRRF td:nth-child(2){width:45%;text-align:right}
+#tabelaIRRF th:nth-child(3),#tabelaIRRF td:nth-child(3){width:20%;text-align:center}
+@media(max-width:650px){.form-taxas,.form-irrf{grid-template-columns:1fr}}
+
+  
 </style>
 </head>
 <body>
