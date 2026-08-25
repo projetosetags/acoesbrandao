@@ -437,11 +437,12 @@ background:#f8fafc
 <div class="status" id="status">Conectando…</div>
 </header>
 <nav class="nav">
-<button type="button" class="ativo" data-tab="painel">Painel</button>
-<button type="button" data-tab="carteira">Carteira</button>
-<button type="button" data-tab="operacoes">Operações</button>
-<button type="button" data-tab="resultados">Resultados</button>
-<button type="button" data-tab="taxas">Taxas</button>
+<button class="ativo" data-tab="painel">Painel</button>
+<button data-tab="carteira">Carteira</button>
+<button data-tab="operacoes">Operações</button>
+<button data-tab="resultados">Resultados</button>
+<button data-tab="taxas">Taxas</button>
+<button data-tab="irrf">IRRF</button>
 </nav>
 <main class="wrap">
 <!-- =========================================================
@@ -598,32 +599,44 @@ RESULTADOS
 TAXAS
 ========================================================= -->
 <section id="taxas" class="aba">
+<div class="cabecalho-painel">
+<h2>Taxas</h2>
+<div class="exportacoes">
+<button class="btn-exportar pdf" type="button" onclick="exportarPDF('taxas')">📄 PDF</button>
+</div>
+</div>
 <div class="card">
 <h3>Registrar / atualizar taxas do dia</h3>
-<div class="form">
-<label>
-Data
-<input id="txData" type="date">
-</label>
-<label>
-Liquidação
-<input id="txLiq" type="number" step="0.01" min="0" inputmode="decimal" value="0">
-</label>
-<label>
-Negociação
-<input id="txNeg" type="number" step="0.01" min="0" inputmode="decimal" value="0">
-</label>
-<label>
-IRRF
-<input id="txIrrf" type="number" step="0.01" min="0" inputmode="decimal" value="0">
-</label>
-<div>
-<button class="btn" type="button" onclick="salvarTaxa()">Salvar taxas</button>
-</div>
+<div class="form form-taxas">
+<label>Data<input id="txData" type="date"></label>
+<label>Liquidação<input id="txLiq" type="number" step="0.01" value="0"></label>
+<label>Negociação<input id="txNeg" type="number" step="0.01" value="0"></label>
+<div><button class="btn" onclick="salvarTaxa()">Salvar taxas</button></div>
 </div>
 </div>
 <div class="card" style="margin-top:14px">
+<h3>Taxas operacionais</h3>
 <div id="tabelaTaxas"></div>
+</div>
+</section>
+<section id="irrf" class="aba">
+<div class="cabecalho-painel">
+<h2>IRRF</h2>
+<div class="exportacoes">
+<button class="btn-exportar pdf" type="button" onclick="exportarPDF('irrf')">📄 PDF</button>
+</div>
+</div>
+<div class="card">
+<h3>Registrar / atualizar IRRF do dia</h3>
+<div class="form form-irrf">
+<label>Data<input id="irrfData" type="date"></label>
+<label>IRRF<input id="irrfValor" type="number" step="0.01" value="0"></label>
+<div><button class="btn" onclick="salvarIRRF()">Salvar IRRF</button></div>
+</div>
+</div>
+<div class="card" style="margin-top:14px">
+<h3>IRRF registrado</h3>
+<div id="tabelaIRRF"></div>
 </div>
 </section>
 </main>
