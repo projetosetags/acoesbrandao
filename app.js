@@ -175,6 +175,7 @@ a.c=0
 }
 }
 }
+/* IRRF NÃO ENTRA NO TOTAL DAS TAXAS */
 let taxasTotal=0
 for(const t of TAXAS){
 if(!t.data)continue
@@ -182,9 +183,9 @@ let m=String(t.data).slice(0,7)
 if(!mensal[m]){
 mensal[m]={mes:m,compras:0,vendas:0,lucro:0,taxas:0}
 }
-let liquidacao=Number(t.taxa_liquidacao)||0
-let negociacao=Number(t.taxa_negociacao)||0
-let taxa=liquidacao+negociacao
+let taxa=
+(Number(t.taxa_liquidacao)||0)+
+(Number(t.taxa_negociacao)||0)
 mensal[m].taxas+=taxa
 taxasTotal+=taxa
 }
@@ -424,19 +425,27 @@ ${rows.length?rows.join(''):`<tr><td colspan="${headers.length}" style="text-ali
 013 RENDERIZAR CARTEIRA
 =========================================================*/
 function renderCarteira(){
-let rows=CALC.carteira.map(a=>{
-let resultado=Number(a.realizado)||0
-return `<tr>
-<td class="carteira-empresa">${escaparHTML(a.empresa)}</td>
+if(!CALC)return
+let rows=CALC.carteira.map(a=>`
+<tr>
+<td class="carteira-empresa"><b>${escaparHTML(a.empresa)}</b></td>
 <td class="carteira-codigo"><b>${escaparHTML(a.codigo)}</b></td>
 <td class="right carteira-qtd">${num(a.qtd)}</td>
 <td class="right carteira-valor">${brl(a.custo)}</td>
 <td class="right carteira-valor">${brl(a.pm)}</td>
-<td class="right carteira-resultado ${resultado>=0?'pos':'neg'}">${brl(resultado)}</td>
+<td class="right carteira-resultado ${a.realizado>=0?'pos':'neg'}">${brl(a.realizado)}</td>
 <td class="right carteira-operacoes">${a.operacoes}</td>
-</tr>`
-})
-let html=tabela(['Empresa','Código','Qtd. Atual','Custo Atual','Preço Médio','Lucro/Prejuízo','Operações'],rows)
+</tr>
+`)
+let html=tabela([
+'Empresa',
+'Código',
+'Qtd. atual',
+'Custo atual',
+'Preço médio',
+'Lucro/Prejuízo realizado',
+'Operações'
+],rows)
 let carteira=document.getElementById('tabelaCarteira')
 let resumo=document.getElementById('resumoPainel')
 if(carteira)carteira.innerHTML=html
@@ -453,7 +462,12 @@ let tp=tipo?.value||''
 let dados=[...OPERACOES].filter(o=>{
 let texto=(String(o.empresa||'')+' '+String(o.codigo||'')).toLowerCase()
 return(!q||texto.includes(q))&&(!tp||o.tipo===tp)
-}).sort((a,b)=>String(b.data||'').localeCompare(String(a.data||''))||Number(b.id||0)-Number(a.id||0))
+}).sort((a,b)=>{
+let dataA=String(a.data||'')
+let dataB=String(b.data||'')
+if(dataA!==dataB)return dataB.localeCompare(dataA)
+return Number(b.id||0)-Number(a.id||0)
+})
 let rows=dados.map(o=>{
 let valor=Number(o.valor_bruto)||((Number(o.quantidade)||0)*(Number(o.preco_unitario)||0))
 return `<tr>
@@ -469,39 +483,58 @@ return `<tr>
 })
 let box=document.getElementById('tabelaOperacoes')
 if(box){
-box.innerHTML=tabela(['Data','Empresa','Código','Tipo','Qtd.','Preço','Valor bruto',''],rows)
+box.innerHTML=tabela([
+'Data',
+'Empresa',
+'Código',
+'Tipo',
+'Qtd.',
+'Preço',
+'Valor bruto',
+''
+],rows)
 }
 }
 /*=========================================================
 015 RENDERIZAR RESULTADO MENSAL
 =========================================================*/
 function renderMensal(){
-let dados=[...CALC.mensal].sort((a,b)=>b.mes.localeCompare(a.mes))
-let rows=dados.map(x=>{
-let compras=Number(x.compras)||0
-let vendas=Number(x.vendas)||0
-let lucro=Number(x.lucro)||0
-let taxas=Number(x.taxas)||0
-let liquido=lucro-taxas
-return `<tr>
+if(!CALC)return
+let rows=[...CALC.mensal].reverse().map(x=>{
+let liquido=x.lucro-x.taxas
+return `
+<tr>
 <td class="resultado-mes"><b>${mesBR(x.mes+'-01')}</b></td>
-<td class="right resultado-valor">${brl(compras)}</td>
-<td class="right resultado-valor">${brl(vendas)}</td>
-<td class="right resultado-bruto ${lucro>=0?'pos':'neg'}">${brl(lucro)}</td>
-<td class="right resultado-taxas">${brl(taxas)}</td>
+<td class="right resultado-valor">${brl(x.compras)}</td>
+<td class="right resultado-valor">${brl(x.vendas)}</td>
+<td class="right resultado-bruto ${x.lucro>=0?'pos':'neg'}">${brl(x.lucro)}</td>
+<td class="right resultado-taxas">${brl(x.taxas)}</td>
 <td class="right resultado-liquido ${liquido>=0?'pos':'neg'}">${brl(liquido)}</td>
-</tr>`
+</tr>
+`
 })
 let box=document.getElementById('tabelaMensal')
 if(box){
-box.innerHTML=tabela(['Mês','Compras','Vendas','Resultado Bruto','Taxas','Resultado Líquido'],rows)
+box.innerHTML=tabela([
+'Mês',
+'Compras',
+'Vendas',
+'Resultado bruto',
+'Taxas',
+'Resultado após taxas'
+],rows)
 }
 }
 /*=========================================================
 016 RENDERIZAR TAXAS
 =========================================================*/
 function renderTaxas(){
-let dados=[...TAXAS].filter(t=>(Number(t.taxa_liquidacao)||0)!==0||(Number(t.taxa_negociacao)||0)!==0).sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')))
+let dados=[...TAXAS].sort((a,b)=>{
+let dataA=String(a.data||'')
+let dataB=String(b.data||'')
+if(dataA!==dataB)return dataB.localeCompare(dataA)
+return Number(b.id||0)-Number(a.id||0)
+})
 let rows=dados.map(t=>{
 let liquidacao=Number(t.taxa_liquidacao)||0
 let negociacao=Number(t.taxa_negociacao)||0
@@ -511,30 +544,56 @@ return `<tr>
 <td class="right">${brl(liquidacao)}</td>
 <td class="right">${brl(negociacao)}</td>
 <td class="right"><b>${brl(total)}</b></td>
-<td><button class="btn-excluir-mini" type="button" onclick="excluirTaxa(${Number(t.id)})">Excluir</button></td>
+<td><button class="btn-excluir-mini" type="button" onclick="excluirTaxa(${Number(t.id)})" title="Excluir taxas operacionais">Excluir</button></td>
 </tr>`
 })
 let box=document.getElementById('tabelaTaxas')
-if(box)box.innerHTML=tabela(['Data','Liquidação','Negociação','Total',''],rows)
+if(box){
+box.innerHTML=tabela([
+'Data',
+'Liquidação',
+'Negociação',
+'Total',
+''
+],rows)
+}
 }
 /*=========================================================
 017 RENDERIZAR IRRF
 =========================================================*/
 function renderIRRF(){
-let dados=[...TAXAS].filter(t=>(Number(t.irrf)||0)!==0).sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')))
+let dados=[...TAXAS]
+.filter(t=>(Number(t.irrf)||0)!==0)
+.sort((a,b)=>{
+let dataA=String(a.data||'')
+let dataB=String(b.data||'')
+if(dataA!==dataB)return dataB.localeCompare(dataA)
+return Number(b.id||0)-Number(a.id||0)
+})
 let totalIRRF=dados.reduce((s,t)=>s+(Number(t.irrf)||0),0)
-let rows=dados.map(t=>`<tr>
+let rows=dados.map(t=>`
+<tr>
 <td><b>${dataBR(t.data)}</b></td>
-<td class="right"><b>${brl(t.irrf)}</b></td>
-<td><button class="btn-excluir-mini" type="button" onclick="excluirIRRF(${Number(t.id)})">Excluir</button></td>
-</tr>`)
+<td class="right"><b>${brl(Number(t.irrf)||0)}</b></td>
+<td><button class="btn-excluir-mini" type="button" onclick="excluirIRRF(${Number(t.id)})" title="Excluir IRRF">Excluir</button></td>
+</tr>
+`)
 let box=document.getElementById('tabelaIRRF')
 if(box){
-box.innerHTML=tabela(['Data','IRRF',''],rows)+`<div class="total-irrf"><span>TOTAL IRRF</span><strong>${brl(totalIRRF)}</strong></div>`
+box.innerHTML=
+tabela([
+'Data',
+'IRRF',
+''
+],rows)+
+`<div class="total-irrf">
+<span>TOTAL IRRF</span>
+<strong>${brl(totalIRRF)}</strong>
+</div>`
 }
 }
 /*=========================================================
-017 RENDERIZAR GRÁFICOS
+018 RENDERIZAR GRÁFICOS
 =========================================================*/
 function renderGraficos(){
 if(typeof Chart==='undefined'||!CALC)return
@@ -556,7 +615,12 @@ data:{
 labels:labels,
 datasets:[{
 label:'Resultado após taxas',
-data:lucros
+data:lucros,
+backgroundColor:lucros.map(v=>v>=0?'rgba(22,163,74,.78)':'rgba(220,38,38,.78)'),
+borderColor:lucros.map(v=>v>=0?'#15803d':'#b91c1c'),
+borderWidth:1,
+borderRadius:5,
+maxBarThickness:55
 }]
 },
 options:{
@@ -610,7 +674,9 @@ callback:v=>'R$ '+Number(v).toLocaleString('pt-BR')
 /*=========================================================
 GRÁFICO ROSCA - CAPITAL INVESTIDO
 =========================================================*/
-let ativos=CALC.carteira.filter(x=>Number(x.custo)>0).sort((a,b)=>Number(b.custo)-Number(a.custo))
+let ativos=CALC.carteira
+.filter(x=>Number(x.custo)>0)
+.sort((a,b)=>Number(b.custo)-Number(a.custo))
 if(CHART2){
 CHART2.destroy()
 CHART2=null
@@ -621,18 +687,9 @@ let contexto=grafCarteira.getContext('2d')
 contexto.clearRect(0,0,grafCarteira.width,grafCarteira.height)
 return
 }
-/*=========================================================
-TOTAL INVESTIDO
-=========================================================*/
 let totalInvestido=ativos.reduce((total,ativo)=>total+(Number(ativo.custo)||0),0)
-/*=========================================================
-LABELS E VALORES
-=========================================================*/
 let labelsAtivos=ativos.map(ativo=>ativo.codigo)
 let valoresAtivos=ativos.map(ativo=>Number(ativo.custo)||0)
-/*=========================================================
-CORES
-=========================================================*/
 let coresAtivos=[
 '#2563eb',
 '#0f766e',
@@ -649,11 +706,12 @@ let coresAtivos=[
 '#e11d48',
 '#4f46e5',
 '#059669',
-'#d97706'
+'#d97706',
+'#0369a1',
+'#be123c',
+'#6d28d9',
+'#047857'
 ]
-/*=========================================================
-CRIAR GRÁFICO DE ROSCA
-=========================================================*/
 CHART2=new Chart(grafCarteira,{
 type:'doughnut',
 data:{
@@ -683,9 +741,6 @@ left:10
 }
 },
 plugins:{
-/*=========================================================
-LEGENDA
-=========================================================*/
 legend:{
 display:true,
 position:'right',
@@ -709,7 +764,10 @@ let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
 let meta=chart.getDatasetMeta(0)
 let estilo=meta.controller.getStyle(i)
 return{
-text:label+'   '+percentual.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%',
+text:label+'   '+percentual.toLocaleString('pt-BR',{
+minimumFractionDigits:1,
+maximumFractionDigits:1
+})+'%',
 fillStyle:estilo.backgroundColor,
 strokeStyle:estilo.backgroundColor,
 lineWidth:0,
@@ -721,9 +779,6 @@ index:i
 }
 }
 },
-/*=========================================================
-TOOLTIP
-=========================================================*/
 tooltip:{
 backgroundColor:'#0f172a',
 titleColor:'#ffffff',
@@ -740,13 +795,13 @@ return ativo.codigo+' • '+ativo.empresa
 label:function(context){
 let valor=Number(context.raw)||0
 let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
-return brl(valor)+' • '+percentual.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'
+return brl(valor)+' • '+percentual.toLocaleString('pt-BR',{
+minimumFractionDigits:1,
+maximumFractionDigits:1
+})+'%'
 }
 }
 },
-/*=========================================================
-RÓTULOS NAS FATIAS
-=========================================================*/
 datalabels:{
 display:function(context){
 let valor=Number(context.dataset.data[context.dataIndex])||0
@@ -757,7 +812,10 @@ return percentual>=5
 formatter:function(valor,context){
 let percentual=totalInvestido>0?(Number(valor)/totalInvestido)*100:0
 let codigo=context.chart.data.labels[context.dataIndex]
-return codigo+'\n'+percentual.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'%'
+return codigo+'\n'+percentual.toLocaleString('pt-BR',{
+minimumFractionDigits:1,
+maximumFractionDigits:1
+})+'%'
 },
 color:'#ffffff',
 textAlign:'center',
@@ -779,7 +837,7 @@ textStrokeWidth:0
 })
 }
 /*=========================================================
-018 SALVAR OPERAÇÃO
+019 SALVAR OPERAÇÃO
 =========================================================*/
 async function salvarOperacao(){
 let data=document.getElementById('opData')
@@ -800,18 +858,29 @@ if(obj.empresa==='__NOVO__'||obj.codigo==='__NOVO__'){
 alert('Cadastre o novo ativo antes de salvar a operação.')
 return
 }
-if(!obj.data||!obj.empresa||!obj.codigo||!Number.isFinite(obj.quantidade)||obj.quantidade<=0||!Number.isFinite(obj.preco_unitario)||obj.preco_unitario<=0){
+if(
+!obj.data||
+!obj.empresa||
+!obj.codigo||
+!Number.isFinite(obj.quantidade)||
+obj.quantidade<=0||
+!Number.isFinite(obj.preco_unitario)||
+obj.preco_unitario<=0
+){
 alert('Preencha corretamente todos os campos da operação.')
 return
 }
-let ativo=ATIVOS.find(a=>a.codigo===obj.codigo)
+let ativo=ATIVOS.find(a=>String(a.codigo||'').toUpperCase()===obj.codigo)
 if(!ativo){
 alert('O ativo selecionado não está cadastrado.')
 return
 }
 obj.empresa=ativo.empresa
 avisar('Salvando operação…')
-let r=await db.from('nemesio_operacoes').insert(obj)
+try{
+let r=await db
+.from('nemesio_operacoes')
+.insert(obj)
 if(r.error){
 console.error('Erro ao salvar operação:',r.error)
 alert('Erro ao salvar operação:\n'+r.error.message)
@@ -822,48 +891,97 @@ if(empresa)empresa.value=''
 if(codigo)codigo.value=''
 if(qtd)qtd.value=''
 if(preco)preco.value=''
+if(tipo)tipo.value='Compra'
 if(data)data.value=hoje()
 await carregar()
+avisar('Operação salva com sucesso')
+}catch(erro){
+console.error('Erro inesperado ao salvar operação:',erro)
+alert('Não foi possível salvar a operação.')
+avisar('Erro ao salvar operação')
+}
 }
 /*=========================================================
-019 EXCLUIR OPERAÇÃO
+020 EXCLUIR OPERAÇÃO
 =========================================================*/
 async function excluirOperacao(id){
+if(!id)return
 if(!confirm('Tem certeza que deseja excluir esta operação?'))return
 avisar('Excluindo operação…')
-let r=await db.from('nemesio_operacoes').delete().eq('id',id)
+try{
+let r=await db
+.from('nemesio_operacoes')
+.delete()
+.eq('id',id)
 if(r.error){
 console.error('Erro ao excluir operação:',r.error)
-alert(r.error.message)
+alert('Erro ao excluir operação:\n'+r.error.message)
 avisar('Erro ao excluir operação')
 return
 }
 await carregar()
+avisar('Operação excluída')
+}catch(erro){
+console.error('Erro inesperado ao excluir operação:',erro)
+alert('Não foi possível excluir a operação.')
+avisar('Erro ao excluir operação')
+}
 }
 /*=========================================================
-020 SALVAR TAXA
+021 BUSCAR REGISTRO DE TAXAS POR DATA
+=========================================================*/
+async function buscarTaxaPorData(data){
+if(!data)return null
+let r=await db
+.from('nemesio_taxas')
+.select('*')
+.eq('data',data)
+.maybeSingle()
+if(r.error){
+console.error('Erro ao consultar taxas:',r.error)
+throw r.error
+}
+return r.data||null
+}
+/*=========================================================
+022 SALVAR TAXAS
+IRRF NÃO É ALTERADO NESTA FUNÇÃO
 =========================================================*/
 async function salvarTaxa(){
 let data=document.getElementById('txData')
 let liq=document.getElementById('txLiq')
 let neg=document.getElementById('txNeg')
 let dataValor=data?.value||''
+let liquidacao=Number(liq?.value||0)
+let negociacao=Number(neg?.value||0)
 if(!dataValor){
 alert('Informe a data.')
 return
 }
-let liquidacao=Number(liq?.value||0)
-let negociacao=Number(neg?.value||0)
+if(!Number.isFinite(liquidacao)||liquidacao<0){
+alert('Informe corretamente a taxa de liquidação.')
+return
+}
+if(!Number.isFinite(negociacao)||negociacao<0){
+alert('Informe corretamente a taxa de negociação.')
+return
+}
 avisar('Salvando taxas…')
-let existente=TAXAS.find(t=>String(t.data).slice(0,10)===dataValor)
+try{
+let existente=await buscarTaxaPorData(dataValor)
 let r
 if(existente){
-r=await db.from('nemesio_taxas').update({
+r=await db
+.from('nemesio_taxas')
+.update({
 taxa_liquidacao:liquidacao,
 taxa_negociacao:negociacao
-}).eq('id',existente.id)
+})
+.eq('id',existente.id)
 }else{
-r=await db.from('nemesio_taxas').insert({
+r=await db
+.from('nemesio_taxas')
+.insert({
 data:dataValor,
 taxa_liquidacao:liquidacao,
 taxa_negociacao:negociacao,
@@ -872,94 +990,1009 @@ irrf:0
 }
 if(r.error){
 console.error('Erro ao salvar taxas:',r.error)
-alert(r.error.message)
+alert('Erro ao salvar taxas:\n'+r.error.message)
 avisar('Erro ao salvar taxas')
 return
 }
 if(liq)liq.value='0'
 if(neg)neg.value='0'
+if(data)data.value=hoje()
 await carregar()
+avisar('Taxas salvas com sucesso')
+}catch(erro){
+console.error('Erro inesperado ao salvar taxas:',erro)
+alert('Não foi possível salvar as taxas.')
+avisar('Erro ao salvar taxas')
+}
 }
 /*=========================================================
-023 EXCLUIR TAXA
+023 EXCLUIR TAXAS
+MANTÉM O IRRF DO MESMO REGISTRO
 =========================================================*/
 async function excluirTaxa(id){
-if(!confirm('Excluir as taxas de Liquidação e Negociação desta data?'))return
+if(!id)return
+if(!confirm('Tem certeza que deseja excluir estas taxas operacionais?'))return
 avisar('Excluindo taxas…')
-let r=await db.from('nemesio_taxas').update({
+try{
+let consulta=await db
+.from('nemesio_taxas')
+.select('*')
+.eq('id',id)
+.maybeSingle()
+if(consulta.error){
+console.error('Erro ao consultar registro:',consulta.error)
+alert('Erro ao consultar o registro:\n'+consulta.error.message)
+avisar('Erro ao excluir taxas')
+return
+}
+let registro=consulta.data
+if(!registro){
+alert('Registro não encontrado.')
+await carregar()
+return
+}
+let irrf=Number(registro.irrf)||0
+let r
+if(irrf!==0){
+r=await db
+.from('nemesio_taxas')
+.update({
 taxa_liquidacao:0,
 taxa_negociacao:0
-}).eq('id',id)
+})
+.eq('id',id)
+}else{
+r=await db
+.from('nemesio_taxas')
+.delete()
+.eq('id',id)
+}
 if(r.error){
-console.error(r.error)
-alert(r.error.message)
+console.error('Erro ao excluir taxas:',r.error)
+alert('Erro ao excluir taxas:\n'+r.error.message)
+avisar('Erro ao excluir taxas')
 return
 }
 await carregar()
+avisar('Taxas excluídas')
+}catch(erro){
+console.error('Erro inesperado ao excluir taxas:',erro)
+alert('Não foi possível excluir as taxas.')
+avisar('Erro ao excluir taxas')
+}
 }
 /*=========================================================
-022 SALVAR IRRF
+024 SALVAR IRRF
+TAXAS OPERACIONAIS NÃO SÃO ALTERADAS
 =========================================================*/
 async function salvarIRRF(){
 let data=document.getElementById('irrfData')
-let valor=document.getElementById('irrfValor')
+let campoValor=document.getElementById('irrfValor')
 let dataValor=data?.value||''
-let irrf=Number(valor?.value||0)
+let valor=Number(campoValor?.value||0)
 if(!dataValor){
 alert('Informe a data.')
 return
 }
+if(!Number.isFinite(valor)||valor<0){
+alert('Informe corretamente o valor do IRRF.')
+return
+}
 avisar('Salvando IRRF…')
-let existente=TAXAS.find(t=>String(t.data).slice(0,10)===dataValor)
+try{
+let existente=await buscarTaxaPorData(dataValor)
 let r
 if(existente){
-r=await db.from('nemesio_taxas').update({irrf}).eq('id',existente.id)
+r=await db
+.from('nemesio_taxas')
+.update({
+irrf:valor
+})
+.eq('id',existente.id)
 }else{
-r=await db.from('nemesio_taxas').insert({
+r=await db
+.from('nemesio_taxas')
+.insert({
 data:dataValor,
 taxa_liquidacao:0,
 taxa_negociacao:0,
-irrf:irrf
+irrf:valor
 })
 }
 if(r.error){
 console.error('Erro ao salvar IRRF:',r.error)
-alert(r.error.message)
+alert('Erro ao salvar IRRF:\n'+r.error.message)
 avisar('Erro ao salvar IRRF')
 return
 }
-if(valor)valor.value='0'
+if(campoValor)campoValor.value='0'
+if(data)data.value=hoje()
 await carregar()
+avisar('IRRF salvo com sucesso')
+}catch(erro){
+console.error('Erro inesperado ao salvar IRRF:',erro)
+alert('Não foi possível salvar o IRRF.')
+avisar('Erro ao salvar IRRF')
+}
 }
 /*=========================================================
-024 EXCLUIR IRRF
+025 EXCLUIR IRRF
+MANTÉM AS TAXAS OPERACIONAIS DO MESMO REGISTRO
 =========================================================*/
 async function excluirIRRF(id){
-if(!confirm('Excluir o IRRF desta data?'))return
+if(!id)return
+if(!confirm('Tem certeza que deseja excluir este IRRF?'))return
 avisar('Excluindo IRRF…')
-let r=await db.from('nemesio_taxas').update({
+try{
+let consulta=await db
+.from('nemesio_taxas')
+.select('*')
+.eq('id',id)
+.maybeSingle()
+if(consulta.error){
+console.error('Erro ao consultar registro:',consulta.error)
+alert('Erro ao consultar o registro:\n'+consulta.error.message)
+avisar('Erro ao excluir IRRF')
+return
+}
+let registro=consulta.data
+if(!registro){
+alert('Registro não encontrado.')
+await carregar()
+return
+}
+let liquidacao=Number(registro.taxa_liquidacao)||0
+let negociacao=Number(registro.taxa_negociacao)||0
+let r
+if(liquidacao!==0||negociacao!==0){
+r=await db
+.from('nemesio_taxas')
+.update({
 irrf:0
-}).eq('id',id)
+})
+.eq('id',id)
+}else{
+r=await db
+.from('nemesio_taxas')
+.delete()
+.eq('id',id)
+}
 if(r.error){
-console.error(r.error)
-alert(r.error.message)
+console.error('Erro ao excluir IRRF:',r.error)
+alert('Erro ao excluir IRRF:\n'+r.error.message)
+avisar('Erro ao excluir IRRF')
 return
 }
 await carregar()
+avisar('IRRF excluído')
+}catch(erro){
+console.error('Erro inesperado ao excluir IRRF:',erro)
+alert('Não foi possível excluir o IRRF.')
+avisar('Erro ao excluir IRRF')
+}
 }
 /*=========================================================
-022 INICIALIZAÇÃO
+026 TOTAL DE IRRF
 =========================================================*/
-function inicializar(){
-let campoOpData=document.getElementById('opData')
-let campoTxData=document.getElementById('txData')
-let campoIrrfData=document.getElementById('irrfData')
-if(campoIrrfData)campoIrrfData.value=hoje()
-if(campoOpData)campoOpData.value=hoje()
-if(campoTxData)campoTxData.value=hoje()
-atualizarVisibilidadeValores()
-carregar()
+function calcularTotalIRRF(){
+return TAXAS.reduce((total,t)=>{
+return total+(Number(t.irrf)||0)
+},0)
 }
+/*=========================================================
+027 OBTER PAINÉIS SELECIONADOS PARA PDF
+=========================================================*/
+function obterPaineisPDFSelecionados(){
+return{
+resumo:document.getElementById('pdfResumo')?.checked===true,
+carteira:document.getElementById('pdfCarteira')?.checked===true,
+operacoes:document.getElementById('pdfOperacoes')?.checked===true,
+resultados:document.getElementById('pdfResultados')?.checked===true,
+taxas:document.getElementById('pdfTaxas')?.checked===true,
+irrf:document.getElementById('pdfIRRF')?.checked===true
+}
+}
+/*=========================================================
+028 EXISTE PAINEL SELECIONADO
+=========================================================*/
+function existePainelPDFSelecionado(selecionados){
+return Object.values(selecionados||{}).some(Boolean)
+}
+/*=========================================================
+029 FORMATAR NÚMERO PARA PDF
+=========================================================*/
+function numeroPDF(valor,casas=2){
+return(Number(valor)||0).toLocaleString('pt-BR',{
+minimumFractionDigits:casas,
+maximumFractionDigits:casas
+})
+}
+/*=========================================================
+030 FORMATAR MOEDA PARA PDF
+=========================================================*/
+function moedaPDF(valor){
+return(Number(valor)||0).toLocaleString('pt-BR',{
+style:'currency',
+currency:'BRL'
+})
+}
+/*=========================================================
+031 TEXTO SEGURO PARA PDF
+=========================================================*/
+function textoPDF(valor){
+if(valor===null||valor===undefined)return''
+return String(valor)
+}
+/*=========================================================
+032 CRIAR NOVA PÁGINA PDF
+=========================================================*/
+function novaPaginaPDF(doc,titulo){
+doc.addPage()
+cabecalhoPDF(doc,titulo)
+return 34
+}
+/*=========================================================
+033 CABEÇALHO DO PDF
+=========================================================*/
+function cabecalhoPDF(doc,titulo){
+let largura=doc.internal.pageSize.getWidth()
+doc.setFillColor(15,23,42)
+doc.rect(0,0,largura,23,'F')
+doc.setTextColor(255,255,255)
+doc.setFont('helvetica','bold')
+doc.setFontSize(15)
+doc.text('Nemésio G Brandão',14,10)
+doc.setFont('helvetica','normal')
+doc.setFontSize(9)
+doc.text('Controle de Ações',14,16)
+doc.setFont('helvetica','bold')
+doc.setFontSize(10)
+doc.text(textoPDF(titulo),largura-14,13,{align:'right'})
+doc.setTextColor(15,23,42)
+}
+/*=========================================================
+034 RODAPÉ E NUMERAÇÃO DO PDF
+=========================================================*/
+function aplicarRodapesPDF(doc){
+let paginas=doc.internal.getNumberOfPages()
+for(let i=1;i<=paginas;i++){
+doc.setPage(i)
+let largura=doc.internal.pageSize.getWidth()
+let altura=doc.internal.pageSize.getHeight()
+doc.setDrawColor(226,232,240)
+doc.line(14,altura-12,largura-14,altura-12)
+doc.setFont('helvetica','normal')
+doc.setFontSize(7.5)
+doc.setTextColor(100,116,139)
+doc.text(
+'Gerado em '+new Date().toLocaleString('pt-BR'),
+14,
+altura-7
+)
+doc.text(
+'Página '+i+' de '+paginas,
+largura-14,
+altura-7,
+{align:'right'}
+)
+}
+}
+/*=========================================================
+035 VERIFICAR AUTOTABLE
+=========================================================*/
+function verificarAutoTablePDF(doc){
+return typeof doc.autoTable==='function'
+}
+/*=========================================================
+036 ADICIONAR TÍTULO DE SEÇÃO NO PDF
+=========================================================*/
+function tituloSecaoPDF(doc,titulo,y){
+doc.setTextColor(15,23,42)
+doc.setFont('helvetica','bold')
+doc.setFontSize(13)
+doc.text(textoPDF(titulo),14,y)
+doc.setDrawColor(203,213,225)
+doc.line(14,y+3,doc.internal.pageSize.getWidth()-14,y+3)
+return y+9
+}
+/*=========================================================
+037 ADICIONAR TABELA NO PDF
+=========================================================*/
+function tabelaPDF(doc,cabecalho,linhas,y,opcoes={}){
+if(!verificarAutoTablePDF(doc)){
+throw new Error('jsPDF AutoTable não foi carregado.')
+}
+doc.autoTable({
+startY:y,
+head:[cabecalho],
+body:linhas,
+theme:'grid',
+margin:{
+left:14,
+right:14,
+bottom:18
+},
+styles:{
+font:'helvetica',
+fontSize:7.5,
+cellPadding:2.2,
+textColor:[51,65,85],
+lineColor:[226,232,240],
+lineWidth:.15,
+overflow:'linebreak',
+valign:'middle'
+},
+headStyles:{
+fillColor:[241,245,249],
+textColor:[51,65,85],
+fontStyle:'bold',
+lineColor:[203,213,225],
+lineWidth:.2
+},
+alternateRowStyles:{
+fillColor:[248,250,252]
+},
+...opcoes
+})
+return doc.lastAutoTable.finalY
+}
+/*=========================================================
+038 CONVERTER CANVAS EM IMAGEM PARA PDF
+=========================================================*/
+function canvasImagemPDF(id){
+let canvas=document.getElementById(id)
+if(!canvas)return null
+try{
+return canvas.toDataURL('image/png',1)
+}catch(erro){
+console.warn('Não foi possível converter gráfico:',id,erro)
+return null
+}
+}
+/*=========================================================
+039 EXPORTAR PDF SELECIONADO
+=========================================================*/
+async function exportarPDFSelecionado(){
+if(!CALC){
+alert('Aguarde o carregamento dos dados.')
+return
+}
+let selecionados=obterPaineisPDFSelecionados()
+if(!existePainelPDFSelecionado(selecionados)){
+alert('Marque pelo menos um painel para gerar o PDF.')
+return
+}
+if(!window.jspdf||!window.jspdf.jsPDF){
+alert('A biblioteca de geração de PDF não foi carregada.')
+return
+}
+avisar('Gerando PDF…')
+try{
+let {jsPDF}=window.jspdf
+let doc=new jsPDF({
+orientation:'landscape',
+unit:'mm',
+format:'a4',
+compress:true
+})
+if(!verificarAutoTablePDF(doc)){
+throw new Error('A biblioteca jsPDF AutoTable não foi carregada.')
+}
+let primeiraSecao=true
+function prepararSecao(titulo){
+if(primeiraSecao){
+cabecalhoPDF(doc,titulo)
+primeiraSecao=false
+return 34
+}
+return novaPaginaPDF(doc,titulo)
+}
+/*=========================================================
+040 PDF - RESUMO
+=========================================================*/
+if(selecionados.resumo){
+let y=prepararSecao('Resumo')
+y=tituloSecaoPDF(doc,'Resumo geral',y)
+let totalIRRF=calcularTotalIRRF()
+let resultadoAposTaxas=CALC.realizado-CALC.taxasTotal
+let cards=[
+['Valor investido',moedaPDF(CALC.investido)],
+['Ações / Cotas',numeroPDF(CALC.qtd,2)],
+['Lucro / Prejuízo acumulado',moedaPDF(CALC.realizado)],
+['Taxas operacionais',moedaPDF(CALC.taxasTotal)],
+['Compras',moedaPDF(CALC.compras)],
+['Vendas',moedaPDF(CALC.vendas)],
+['Resultado após taxas',moedaPDF(resultadoAposTaxas)],
+['IRRF registrado',moedaPDF(totalIRRF)]
+]
+let largura=doc.internal.pageSize.getWidth()
+let margem=14
+let gap=4
+let colunas=4
+let larguraCard=(largura-(margem*2)-(gap*(colunas-1)))/colunas
+let alturaCard=19
+cards.forEach((item,i)=>{
+let coluna=i%colunas
+let linha=Math.floor(i/colunas)
+let x=margem+coluna*(larguraCard+gap)
+let cy=y+linha*(alturaCard+4)
+doc.setFillColor(248,250,252)
+doc.setDrawColor(226,232,240)
+doc.roundedRect(x,cy,larguraCard,alturaCard,2,2,'FD')
+doc.setFont('helvetica','bold')
+doc.setFontSize(7.5)
+doc.setTextColor(100,116,139)
+doc.text(item[0].toUpperCase(),x+4,cy+6)
+doc.setFontSize(11)
+doc.setTextColor(15,23,42)
+doc.text(item[1],x+4,cy+14)
+})
+y+=46
+/*=========================================================
+041 PDF - GRÁFICOS DO RESUMO
+=========================================================*/
+let imgResultado=canvasImagemPDF('grafResultado')
+let imgCarteira=canvasImagemPDF('grafCarteira')
+if(imgResultado||imgCarteira){
+y=tituloSecaoPDF(doc,'Gráficos',y+3)
+let larguraGraf=(largura-(margem*2)-6)/2
+let alturaGraf=66
+if(imgResultado){
+doc.setDrawColor(226,232,240)
+doc.roundedRect(margem,y,larguraGraf,alturaGraf,2,2,'S')
+doc.setFont('helvetica','bold')
+doc.setFontSize(8)
+doc.setTextColor(51,65,85)
+doc.text('Resultado realizado por mês',margem+4,y+6)
+doc.addImage(
+imgResultado,
+'PNG',
+margem+3,
+y+9,
+larguraGraf-6,
+alturaGraf-12,
+undefined,
+'FAST'
+)
+}
+if(imgCarteira){
+let x2=margem+larguraGraf+6
+doc.setDrawColor(226,232,240)
+doc.roundedRect(x2,y,larguraGraf,alturaGraf,2,2,'S')
+doc.setFont('helvetica','bold')
+doc.setFontSize(8)
+doc.setTextColor(51,65,85)
+doc.text('Capital investido por ativo',x2+4,y+6)
+doc.addImage(
+imgCarteira,
+'PNG',
+x2+3,
+y+9,
+larguraGraf-6,
+alturaGraf-12,
+undefined,
+'FAST'
+)
+}
+y+=alturaGraf+7
+}
+/*=========================================================
+042 PDF - RESUMO DA CARTEIRA
+=========================================================*/
+if(CALC.carteira.length){
+if(y>155){
+y=novaPaginaPDF(doc,'Resumo')
+}
+y=tituloSecaoPDF(doc,'Resumo da carteira atual',y)
+let linhas=CALC.carteira.map(a=>[
+textoPDF(a.empresa),
+textoPDF(a.codigo),
+numeroPDF(a.qtd,2),
+moedaPDF(a.custo),
+moedaPDF(a.pm),
+moedaPDF(a.realizado),
+textoPDF(a.operacoes)
+])
+tabelaPDF(
+doc,
+[
+'Empresa',
+'Código',
+'Qtd. atual',
+'Custo atual',
+'Preço médio',
+'Lucro/Prejuízo',
+'Operações'
+],
+linhas,
+y,
+{
+columnStyles:{
+0:{cellWidth:52},
+1:{cellWidth:24},
+2:{halign:'right',cellWidth:25},
+3:{halign:'right',cellWidth:38},
+4:{halign:'right',cellWidth:34},
+5:{halign:'right',cellWidth:40},
+6:{halign:'right',cellWidth:24}
+}
+}
+)
+}
+}
+/*=========================================================
+043 PDF - CARTEIRA
+=========================================================*/
+if(selecionados.carteira){
+let y=prepararSecao('Carteira')
+y=tituloSecaoPDF(doc,'Carteira por empresa / ativo',y)
+let linhas=CALC.carteira.map(a=>[
+textoPDF(a.empresa),
+textoPDF(a.codigo),
+numeroPDF(a.qtd,2),
+moedaPDF(a.custo),
+moedaPDF(a.pm),
+moedaPDF(a.realizado),
+textoPDF(a.operacoes)
+])
+tabelaPDF(
+doc,
+[
+'Empresa',
+'Código',
+'Qtd. atual',
+'Custo atual',
+'Preço médio',
+'Lucro/Prejuízo realizado',
+'Operações'
+],
+linhas,
+y,
+{
+columnStyles:{
+0:{cellWidth:52},
+1:{cellWidth:24},
+2:{halign:'right',cellWidth:25},
+3:{halign:'right',cellWidth:38},
+4:{halign:'right',cellWidth:34},
+5:{halign:'right',cellWidth:44},
+6:{halign:'right',cellWidth:24}
+},
+didParseCell:function(data){
+if(data.section==='body'&&data.column.index===5){
+let linha=CALC.carteira[data.row.index]
+if(linha){
+if(Number(linha.realizado)>=0){
+data.cell.styles.textColor=[21,128,61]
+}else{
+data.cell.styles.textColor=[220,38,38]
+}
+data.cell.styles.fontStyle='bold'
+}
+}
+}
+}
+)
+}
+/*=========================================================
+044 PDF - OPERAÇÕES
+=========================================================*/
+if(selecionados.operacoes){
+let y=prepararSecao('Operações')
+y=tituloSecaoPDF(doc,'Histórico de compras e vendas',y)
+let dados=[...OPERACOES].sort((a,b)=>{
+let dataA=String(a.data||'')
+let dataB=String(b.data||'')
+if(dataA!==dataB)return dataB.localeCompare(dataA)
+return Number(b.id||0)-Number(a.id||0)
+})
+let linhas=dados.map(o=>{
+let valor=Number(o.valor_bruto)||(
+(Number(o.quantidade)||0)*
+(Number(o.preco_unitario)||0)
+)
+return[
+dataBR(o.data),
+textoPDF(o.empresa),
+textoPDF(o.codigo),
+textoPDF(o.tipo),
+numeroPDF(o.quantidade,2),
+moedaPDF(o.preco_unitario),
+moedaPDF(valor)
+]
+})
+tabelaPDF(
+doc,
+[
+'Data',
+'Empresa',
+'Código',
+'Tipo',
+'Quantidade',
+'Preço unitário',
+'Valor bruto'
+],
+linhas,
+y,
+{
+columnStyles:{
+0:{cellWidth:27},
+1:{cellWidth:60},
+2:{cellWidth:28},
+3:{cellWidth:25},
+4:{halign:'right',cellWidth:30},
+5:{halign:'right',cellWidth:38},
+6:{halign:'right',cellWidth:42}
+},
+didParseCell:function(data){
+if(data.section==='body'&&data.column.index===3){
+let tipo=String(data.cell.raw||'')
+if(tipo==='Compra'){
+data.cell.styles.textColor=[22,101,52]
+data.cell.styles.fontStyle='bold'
+}
+if(tipo==='Venda'){
+data.cell.styles.textColor=[153,27,27]
+data.cell.styles.fontStyle='bold'
+}
+}
+}
+}
+)
+}
+/*=========================================================
+045 PDF - RESULTADOS
+=========================================================*/
+if(selecionados.resultados){
+let y=prepararSecao('Resultados')
+y=tituloSecaoPDF(doc,'Resultado mensal',y)
+let dados=[...CALC.mensal].reverse()
+let linhas=dados.map(x=>[
+mesBR(x.mes+'-01'),
+moedaPDF(x.compras),
+moedaPDF(x.vendas),
+moedaPDF(x.lucro),
+moedaPDF(x.taxas),
+moedaPDF(x.lucro-x.taxas)
+])
+tabelaPDF(
+doc,
+[
+'Mês',
+'Compras',
+'Vendas',
+'Resultado bruto',
+'Taxas',
+'Resultado após taxas'
+],
+linhas,
+y,
+{
+columnStyles:{
+0:{cellWidth:35},
+1:{halign:'right',cellWidth:43},
+2:{halign:'right',cellWidth:43},
+3:{halign:'right',cellWidth:48},
+4:{halign:'right',cellWidth:38},
+5:{halign:'right',cellWidth:50}
+},
+didParseCell:function(data){
+if(data.section!=='body')return
+let linha=dados[data.row.index]
+if(!linha)return
+if(data.column.index===3){
+data.cell.styles.fontStyle='bold'
+data.cell.styles.textColor=
+Number(linha.lucro)>=0
+?[21,128,61]
+:[220,38,38]
+}
+if(data.column.index===5){
+let resultado=
+Number(linha.lucro)-
+Number(linha.taxas)
+data.cell.styles.fontStyle='bold'
+data.cell.styles.textColor=
+resultado>=0
+?[21,128,61]
+:[220,38,38]
+}
+}
+}
+)
+}
+/*=========================================================
+046 PDF - TAXAS
+=========================================================*/
+if(selecionados.taxas){
+let y=prepararSecao('Taxas')
+y=tituloSecaoPDF(doc,'Taxas operacionais',y)
+let dados=[...TAXAS]
+.filter(t=>{
+let liquidacao=Number(t.taxa_liquidacao)||0
+let negociacao=Number(t.taxa_negociacao)||0
+return liquidacao!==0||negociacao!==0
+})
+.sort((a,b)=>{
+let dataA=String(a.data||'')
+let dataB=String(b.data||'')
+if(dataA!==dataB)return dataB.localeCompare(dataA)
+return Number(b.id||0)-Number(a.id||0)
+})
+let linhas=dados.map(t=>{
+let liquidacao=Number(t.taxa_liquidacao)||0
+let negociacao=Number(t.taxa_negociacao)||0
+return[
+dataBR(t.data),
+moedaPDF(liquidacao),
+moedaPDF(negociacao),
+moedaPDF(liquidacao+negociacao)
+]
+})
+tabelaPDF(
+doc,
+[
+'Data',
+'Liquidação',
+'Negociação',
+'Total'
+],
+linhas,
+y,
+{
+columnStyles:{
+0:{cellWidth:50},
+1:{halign:'right',cellWidth:60},
+2:{halign:'right',cellWidth:60},
+3:{halign:'right',cellWidth:60,fontStyle:'bold'}
+}
+}
+)
+let totalLiquidacao=dados.reduce(
+(s,t)=>s+(Number(t.taxa_liquidacao)||0),
+0
+)
+let totalNegociacao=dados.reduce(
+(s,t)=>s+(Number(t.taxa_negociacao)||0),
+0
+)
+let finalY=doc.lastAutoTable.finalY+8
+let alturaPagina=doc.internal.pageSize.getHeight()
+if(finalY>alturaPagina-35){
+finalY=novaPaginaPDF(doc,'Taxas')
+}
+doc.setFillColor(248,250,252)
+doc.setDrawColor(226,232,240)
+doc.roundedRect(14,finalY,120,23,2,2,'FD')
+doc.setFont('helvetica','bold')
+doc.setFontSize(8)
+doc.setTextColor(100,116,139)
+doc.text('TOTAL TAXAS OPERACIONAIS',19,finalY+7)
+doc.setFontSize(13)
+doc.setTextColor(15,23,42)
+doc.text(
+moedaPDF(totalLiquidacao+totalNegociacao),
+19,
+finalY+17
+)
+}
+/*=========================================================
+047 PDF - IRRF
+=========================================================*/
+if(selecionados.irrf){
+let y=prepararSecao('IRRF')
+y=tituloSecaoPDF(doc,'IRRF registrado',y)
+let dados=[...TAXAS]
+.filter(t=>(Number(t.irrf)||0)!==0)
+.sort((a,b)=>{
+let dataA=String(a.data||'')
+let dataB=String(b.data||'')
+if(dataA!==dataB)return dataB.localeCompare(dataA)
+return Number(b.id||0)-Number(a.id||0)
+})
+let linhas=dados.map(t=>[
+dataBR(t.data),
+moedaPDF(Number(t.irrf)||0)
+])
+tabelaPDF(
+doc,
+[
+'Data',
+'IRRF'
+],
+linhas,
+y,
+{
+columnStyles:{
+0:{cellWidth:80},
+1:{halign:'right',cellWidth:90,fontStyle:'bold'}
+}
+}
+)
+let totalIRRF=dados.reduce(
+(s,t)=>s+(Number(t.irrf)||0),
+0
+)
+let finalY=doc.lastAutoTable.finalY+8
+let alturaPagina=doc.internal.pageSize.getHeight()
+if(finalY>alturaPagina-35){
+finalY=novaPaginaPDF(doc,'IRRF')
+}
+doc.setFillColor(248,250,252)
+doc.setDrawColor(226,232,240)
+doc.roundedRect(14,finalY,100,23,2,2,'FD')
+doc.setFont('helvetica','bold')
+doc.setFontSize(8)
+doc.setTextColor(100,116,139)
+doc.text('TOTAL IRRF',19,finalY+7)
+doc.setFontSize(13)
+doc.setTextColor(15,23,42)
+doc.text(
+moedaPDF(totalIRRF),
+19,
+finalY+17
+)
+}
+/*=========================================================
+048 FINALIZAR PDF
+=========================================================*/
+aplicarRodapesPDF(doc)
+let agora=new Date()
+let nomeArquivo=
+'acoes-nemesio-'+
+agora.getFullYear()+
+String(agora.getMonth()+1).padStart(2,'0')+
+String(agora.getDate()).padStart(2,'0')+
+'-'+
+String(agora.getHours()).padStart(2,'0')+
+String(agora.getMinutes()).padStart(2,'0')+
+'.pdf'
+doc.save(nomeArquivo)
+avisar('PDF gerado com sucesso')
+}catch(erro){
+console.error('Erro ao gerar PDF:',erro)
+alert(
+'Não foi possível gerar o PDF.\n\n'+
+(erro?.message||erro)
+)
+avisar('Erro ao gerar PDF')
+}
+}
+/*=========================================================
+049 MARCAR TODOS OS PAINÉIS DO PDF
+=========================================================*/
+function marcarTodosPDF(){
+[
+'pdfResumo',
+'pdfCarteira',
+'pdfOperacoes',
+'pdfResultados',
+'pdfTaxas',
+'pdfIRRF'
+].forEach(id=>{
+let campo=document.getElementById(id)
+if(campo)campo.checked=true
+})
+}
+/*=========================================================
+050 DESMARCAR TODOS OS PAINÉIS DO PDF
+=========================================================*/
+function desmarcarTodosPDF(){
+[
+'pdfResumo',
+'pdfCarteira',
+'pdfOperacoes',
+'pdfResultados',
+'pdfTaxas',
+'pdfIRRF'
+].forEach(id=>{
+let campo=document.getElementById(id)
+if(campo)campo.checked=false
+})
+}
+/*=========================================================
+051 VERIFICAR BIBLIOTECAS
+=========================================================*/
+function verificarBibliotecas(){
+if(typeof supabase==='undefined'){
+console.error('Supabase JS não foi carregado.')
+avisar('Erro • Supabase indisponível')
+return false
+}
+if(typeof Chart==='undefined'){
+console.warn('Chart.js não foi carregado.')
+}
+if(typeof window.jspdf==='undefined'){
+console.warn('jsPDF não foi carregado.')
+}
+return true
+}
+/*=========================================================
+052 AJUSTAR DATAS INICIAIS
+=========================================================*/
+function ajustarDatasIniciais(){
+let campos=[
+'opData',
+'txData',
+'irrfData'
+]
+campos.forEach(id=>{
+let campo=document.getElementById(id)
+if(campo&&!campo.value){
+campo.value=hoje()
+}
+})
+}
+/*=========================================================
+053 PREPARAR EVENTOS DA INTERFACE
+=========================================================*/
+function prepararEventos(){
+let empresa=document.getElementById('opEmpresa')
+let codigo=document.getElementById('opCodigo')
+let busca=document.getElementById('buscaOp')
+let tipo=document.getElementById('tipoOp')
+if(empresa&&!empresa.dataset.listenerAtivo){
+empresa.addEventListener('change',selecionarEmpresa)
+empresa.dataset.listenerAtivo='1'
+}
+if(codigo&&!codigo.dataset.listenerAtivo){
+codigo.addEventListener('change',selecionarCodigo)
+codigo.dataset.listenerAtivo='1'
+}
+if(busca&&!busca.dataset.listenerAtivo){
+busca.addEventListener('input',renderOperacoes)
+busca.dataset.listenerAtivo='1'
+}
+if(tipo&&!tipo.dataset.listenerAtivo){
+tipo.addEventListener('change',renderOperacoes)
+tipo.dataset.listenerAtivo='1'
+}
+}
+/*=========================================================
+054 CORRIGIR ALTURA DOS GRÁFICOS
+=========================================================*/
+function redimensionarGraficos(){
+if(CHART1){
+try{
+CHART1.resize()
+}catch(erro){
+console.warn('Erro ao redimensionar gráfico de resultados:',erro)
+}
+}
+if(CHART2){
+try{
+CHART2.resize()
+}catch(erro){
+console.warn('Erro ao redimensionar gráfico da carteira:',erro)
+}
+}
+}
+/*=========================================================
+055 OBSERVAR TROCA DE ABAS
+=========================================================*/
+function observarAbas(){
+document.querySelectorAll('.nav button').forEach(botao=>{
+if(botao.dataset.listenerResize==='1')return
+botao.addEventListener('click',()=>{
+setTimeout(redimensionarGraficos,100)
+})
+botao.dataset.listenerResize='1'
+})
+}
+/*=========================================================
+056 INICIALIZAÇÃO
+=========================================================*/
+async function inicializar(){
+if(!verificarBibliotecas())return
+ajustarDatasIniciais()
+prepararEventos()
+observarAbas()
+atualizarVisibilidadeValores()
+await carregar()
+}
+/*=========================================================
+057 INICIAR SISTEMA
+=========================================================*/
 if(document.readyState==='loading'){
 document.addEventListener('DOMContentLoaded',inicializar)
 }else{
