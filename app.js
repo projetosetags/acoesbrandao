@@ -1281,7 +1281,10 @@ altura-7,
 035 VERIFICAR AUTOTABLE
 =========================================================*/
 function verificarAutoTablePDF(doc){
-return typeof doc.autoTable==='function'
+return(
+typeof doc.autoTable==='function'||
+(typeof window.jspdfAutoTable!=='undefined'&&typeof window.jspdfAutoTable.autoTable==='function')
+)
 }
 /*=========================================================
 036 ADICIONAR TÍTULO DE SEÇÃO NO PDF
@@ -1299,10 +1302,7 @@ return y+9
 037 ADICIONAR TABELA NO PDF
 =========================================================*/
 function tabelaPDF(doc,cabecalho,linhas,y,opcoes={}){
-if(!verificarAutoTablePDF(doc)){
-throw new Error('jsPDF AutoTable não foi carregado.')
-}
-doc.autoTable({
+let configuracao={
 startY:y,
 head:[cabecalho],
 body:linhas,
@@ -1333,8 +1333,19 @@ alternateRowStyles:{
 fillColor:[248,250,252]
 },
 ...opcoes
-})
-return doc.lastAutoTable.finalY
+}
+if(typeof doc.autoTable==='function'){
+doc.autoTable(configuracao)
+return doc.lastAutoTable?.finalY||y
+}
+if(
+typeof window.jspdfAutoTable!=='undefined'&&
+typeof window.jspdfAutoTable.autoTable==='function'
+){
+window.jspdfAutoTable.autoTable(doc,configuracao)
+return doc.lastAutoTable?.finalY||y
+}
+throw new Error('jsPDF AutoTable não foi carregado.')
 }
 /*=========================================================
 038 CONVERTER CANVAS EM IMAGEM PARA PDF
