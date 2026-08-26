@@ -388,12 +388,14 @@ let kInvestido=document.getElementById('kInvestido')
 let kQtd=document.getElementById('kQtd')
 let kLucro=document.getElementById('kLucro')
 let kTaxas=document.getElementById('kTaxas')
+let kIRRF=document.getElementById('kIRRF')
 let kCompras=document.getElementById('kCompras')
 let kVendas=document.getElementById('kVendas')
 if(kInvestido)kInvestido.dataset.valor=brl(CALC.investido)
 if(kQtd)kQtd.textContent=num(CALC.qtd)
 if(kLucro)kLucro.dataset.valor=brl(CALC.realizado)
 if(kTaxas)kTaxas.textContent=brl(CALC.taxasTotal)
+if(kIRRF)kIRRF.textContent=brl(calcularTotalIRRF())
 if(kCompras)kCompras.dataset.valor=brl(CALC.compras)
 if(kVendas)kVendas.dataset.valor=brl(CALC.vendas)
 atualizarVisibilidadeValores()
@@ -559,37 +561,26 @@ box.innerHTML=tabela([
 }
 }
 /*=========================================================
-017 RENDERIZAR IRRF
+RENDERIZAR IRRF
 =========================================================*/
 function renderIRRF(){
-let dados=[...TAXAS]
-.filter(t=>(Number(t.irrf)||0)!==0)
-.sort((a,b)=>{
+let dados=[...TAXAS].filter(t=>(Number(t.irrf)||0)!==0).sort((a,b)=>{
 let dataA=String(a.data||'')
 let dataB=String(b.data||'')
 if(dataA!==dataB)return dataB.localeCompare(dataA)
 return Number(b.id||0)-Number(a.id||0)
 })
-let totalIRRF=dados.reduce((s,t)=>s+(Number(t.irrf)||0),0)
-let rows=dados.map(t=>`
-<tr>
+let rows=dados.map(t=>{
+let irrf=Number(t.irrf)||0
+return `<tr>
 <td><b>${dataBR(t.data)}</b></td>
-<td class="right"><b>${brl(Number(t.irrf)||0)}</b></td>
+<td class="right irrf-valor">${brl(irrf)}</td>
 <td><button class="btn-excluir-mini" type="button" onclick="excluirIRRF(${Number(t.id)})" title="Excluir IRRF">Excluir</button></td>
-</tr>
-`)
+</tr>`
+})
 let box=document.getElementById('tabelaIRRF')
 if(box){
-box.innerHTML=
-tabela([
-'Data',
-'IRRF',
-''
-],rows)+
-`<div class="total-irrf">
-<span>TOTAL IRRF</span>
-<strong>${brl(totalIRRF)}</strong>
-</div>`
+box.innerHTML=tabela(['Data','IRRF',''],rows)
 }
 }
 /*=========================================================
