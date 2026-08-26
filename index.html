@@ -188,6 +188,63 @@ EXPORTAÇÃO PDF
 .exportar-check{min-height:38px}
 .btn-pdf{width:100%;min-height:42px}
 }
+/*=========================================================
+RELATÓRIO PERSONALIZADO PDF
+=========================================================*/
+.relatorio-pdf-card{padding:0;overflow:hidden;margin-bottom:14px}
+.relatorio-pdf-topo{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 22px;border-bottom:1px solid #e2e8f0;background:linear-gradient(135deg,#fff,#f8fafc)}
+.relatorio-pdf-titulo{display:flex;align-items:center;gap:12px}
+.relatorio-pdf-icone{width:42px;height:42px;min-width:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#eff6ff;font-size:20px}
+.relatorio-pdf-titulo h3{margin:0;font-size:16px;color:#0f172a}
+.relatorio-pdf-titulo p{margin:4px 0 0;font-size:12px;color:#64748b}
+.btn-gerar-pdf{display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;background:#2563eb;color:#fff;border:0;border-radius:10px;padding:11px 17px;min-height:42px;font-size:12px;font-weight:800;cursor:pointer;transition:filter .15s,transform .1s}
+.btn-gerar-pdf:hover{filter:brightness(.95)}
+.btn-gerar-pdf:active{transform:translateY(1px)}
+.relatorio-pdf-grid{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:0}
+.relatorio-filtro{padding:20px 22px;min-width:0;border-right:1px solid #e2e8f0}
+.relatorio-filtro:last-child{border-right:0}
+.relatorio-filtro-titulo{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.relatorio-filtro-titulo>span{width:29px;height:29px;min-width:29px;border-radius:50%;background:#0f172a;color:#fff;font-size:10px;font-weight:900;display:flex;align-items:center;justify-content:center}
+.relatorio-filtro-titulo div{display:flex;flex-direction:column;gap:2px}
+.relatorio-filtro-titulo strong{font-size:13px;color:#0f172a}
+.relatorio-filtro-titulo small{font-size:10px;font-weight:600;color:#94a3b8}
+.pdf-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.pdf-check{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #e2e8f0;border-radius:9px;background:#fff;cursor:pointer;font-size:11px;font-weight:700;color:#475569;transition:background .15s,border-color .15s,color .15s}
+.pdf-check:hover{border-color:#94a3b8;background:#f8fafc}
+.pdf-check:has(input:checked){border-color:#93c5fd;background:#eff6ff;color:#1d4ed8}
+.pdf-check input{margin:0;width:14px;height:14px;accent-color:#2563eb;cursor:pointer}
+.pdf-acoes-mini{display:flex;align-items:center;gap:14px;margin-top:12px}
+.pdf-acoes-mini button{border:0;padding:2px 0;background:transparent;font-size:10px;font-weight:800;color:#2563eb;cursor:pointer}
+.pdf-acoes-mini button:hover{text-decoration:underline}
+.pdf-acoes-mini button:disabled{color:#cbd5e1;cursor:not-allowed;text-decoration:none}
+.pdf-periodo-todos{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;color:#475569;margin-bottom:12px;cursor:pointer}
+.pdf-periodo-todos input{margin:0;width:14px;height:14px;accent-color:#2563eb;cursor:pointer}
+.pdf-periodo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pdf-periodo-grid label{display:flex;flex-direction:column;gap:5px;font-size:10px;font-weight:800;color:#64748b}
+.pdf-periodo-grid input,.pdf-busca-ativos input{width:100%;height:38px;border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;background:#fff;color:#0f172a;font-size:11px;outline:none}
+.pdf-periodo-grid input:focus,.pdf-busca-ativos input:focus{border-color:#2563eb;box-shadow:0 0 0 3px #2563eb1a}
+.pdf-periodo-grid input:disabled,.pdf-busca-ativos input:disabled{background:#f8fafc;color:#94a3b8;border-color:#e2e8f0;cursor:not-allowed}
+.pdf-info{margin-top:12px;padding:9px 10px;border-radius:8px;background:#f8fafc;color:#64748b;font-size:10px;line-height:1.4;border:1px solid #f1f5f9}
+.pdf-busca-ativos{margin-bottom:8px}
+.pdf-lista-ativos{height:132px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:9px;background:#fff;padding:5px;scrollbar-width:thin}
+.pdf-lista-desabilitada{background:#f8fafc;opacity:.65;pointer-events:none}
+.pdf-ativo-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;cursor:pointer;transition:background .15s}
+.pdf-ativo-item:hover{background:#f8fafc}
+.pdf-ativo-item input{margin:0;width:14px;height:14px;accent-color:#2563eb;cursor:pointer}
+.pdf-ativo-dados{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-width:0}
+.pdf-ativo-dados strong{font-size:11px;color:#0f172a;white-space:nowrap}
+.pdf-ativo-dados span{font-size:10px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.pdf-sem-ativos{padding:18px 10px;text-align:center;font-size:10px;color:#94a3b8}
+.pdf-resumo-selecao{border-top:1px solid #e2e8f0;background:#f8fafc;padding:13px 22px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:20px;align-items:center}
+.pdf-resumo-item{min-width:0;display:flex;flex-direction:column;gap:3px}
+.pdf-resumo-item span{font-size:9px;font-weight:900;letter-spacing:.06em;color:#94a3b8}
+.pdf-resumo-item strong{font-size:11px;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-gerar-pdf-mobile{display:none;border:0;border-radius:10px;padding:11px 14px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer}
+@media(max-width:1050px){.relatorio-pdf-grid{grid-template-columns:1fr 1fr}.relatorio-filtro:nth-child(2){border-right:0}.relatorio-filtro-ativos{grid-column:1/-1;border-top:1px solid #e2e8f0;border-right:0}.pdf-lista-ativos{height:150px}}
+@media(max-width:650px){.relatorio-pdf-card{border-radius:14px}.relatorio-pdf-topo{padding:16px}.relatorio-pdf-titulo{align-items:flex-start}.relatorio-pdf-icone{width:38px;height:38px;min-width:38px;font-size:18px}.relatorio-pdf-titulo h3{font-size:14px}.relatorio-pdf-titulo p{font-size:11px}.relatorio-pdf-topo>.btn-gerar-pdf{display:none}.relatorio-pdf-grid{grid-template-columns:1fr}.relatorio-filtro{border-right:0;border-bottom:1px solid #e2e8f0;padding:17px 16px}.relatorio-filtro-ativos{grid-column:auto;border-top:0}.pdf-check-grid{grid-template-columns:1fr 1fr}.pdf-periodo-grid{grid-template-columns:1fr}.pdf-lista-ativos{height:160px}.pdf-resumo-selecao{padding:14px 16px;grid-template-columns:1fr 1fr;gap:12px}.pdf-resumo-item:nth-child(3){grid-column:1/-1}.btn-gerar-pdf-mobile{display:block;grid-column:1/-1;width:100%;min-height:44px}}
+@media(max-width:390px){.pdf-check-grid{grid-template-columns:1fr}.pdf-resumo-selecao{grid-template-columns:1fr}.pdf-resumo-item:nth-child(3){grid-column:auto}.btn-gerar-pdf-mobile{grid-column:auto}}
+
+  
 </style>
 </head>
 <body>
@@ -211,30 +268,146 @@ EXPORTAÇÃO PDF
 PAINEL/RESUMO
 ========================================================= -->
 <section id="painel" class="aba ativa">
-<div class="card exportar-box">
-<div class="exportar-topo">
-<div class="exportar-titulo">
-<h3>📄 Salvar relatório em PDF</h3>
-<p>Marque os painéis que deseja incluir no relatório.</p>
-</div>
-<div class="exportar-controles">
-<div class="exportar-opcoes">
-<label class="exportar-check"><input type="checkbox" id="pdfResumo" value="resumo" checked>Resumo</label>
-<label class="exportar-check"><input type="checkbox" id="pdfCarteira" value="carteira">Carteira</label>
-<label class="exportar-check"><input type="checkbox" id="pdfOperacoes" value="operacoes">Operações</label>
-<label class="exportar-check"><input type="checkbox" id="pdfResultados" value="resultados">Resultados</label>
-<label class="exportar-check"><input type="checkbox" id="pdfTaxas" value="taxas">Taxas</label>
-<label class="exportar-check"><input type="checkbox" id="pdfIRRF" value="irrf">IRRF</label>
-</div>
-<button class="btn-pdf" type="button" onclick="exportarPDFSelecionado()">📄 Salvar selecionados em PDF</button>
+<!-- =========================================================
+RELATÓRIO PERSONALIZADO PDF
+========================================================= -->
+<div class="card relatorio-pdf-card">
+<div class="relatorio-pdf-topo">
+<div class="relatorio-pdf-titulo">
+<span class="relatorio-pdf-icone">📄</span>
+<div>
+<h3>Relatório personalizado em PDF</h3>
+<p>Escolha o conteúdo, o período e as ações que deseja incluir no relatório.</p>
 </div>
 </div>
+<button class="btn btn-gerar-pdf" type="button" onclick="exportarPDFSelecionado()">📄 Gerar PDF</button>
 </div>
+<div class="relatorio-pdf-grid">
+<!-- =========================================================
+01 CONTEÚDO
+========================================================= -->
+<div class="relatorio-filtro">
+<div class="relatorio-filtro-titulo">
+<span>01</span>
+<div>
+<strong>Conteúdo</strong>
+<small>Escolha os painéis</small>
+</div>
+</div>
+<div class="pdf-check-grid">
+<label class="pdf-check">
+<input type="checkbox" id="pdfResumo" value="resumo" checked onchange="atualizarResumoFiltrosPDF()">
+<span>Resumo</span>
+</label>
+<label class="pdf-check">
+<input type="checkbox" id="pdfCarteira" value="carteira" onchange="atualizarResumoFiltrosPDF()">
+<span>Carteira</span>
+</label>
+<label class="pdf-check">
+<input type="checkbox" id="pdfOperacoes" value="operacoes" onchange="atualizarResumoFiltrosPDF()">
+<span>Operações</span>
+</label>
+<label class="pdf-check">
+<input type="checkbox" id="pdfResultados" value="resultados" onchange="atualizarResumoFiltrosPDF()">
+<span>Resultados</span>
+</label>
+<label class="pdf-check">
+<input type="checkbox" id="pdfTaxas" value="taxas" onchange="atualizarResumoFiltrosPDF()">
+<span>Taxas</span>
+</label>
+<label class="pdf-check">
+<input type="checkbox" id="pdfIRRF" value="irrf" onchange="atualizarResumoFiltrosPDF()">
+<span>IRRF</span>
+</label>
+</div>
+<div class="pdf-acoes-mini">
+<button type="button" onclick="marcarTodosPDF();atualizarResumoFiltrosPDF()">Marcar todos</button>
+<button type="button" onclick="desmarcarTodosPDF();atualizarResumoFiltrosPDF()">Limpar</button>
+</div>
+</div>
+<!-- =========================================================
+02 PERÍODO
+========================================================= -->
+<div class="relatorio-filtro">
+<div class="relatorio-filtro-titulo">
+<span>02</span>
+<div>
+<strong>Período</strong>
+<small>Defina o intervalo desejado</small>
+</div>
+</div>
+<label class="pdf-periodo-todos">
+<input type="checkbox" id="pdfTodoPeriodo" checked onchange="alternarPeriodoPDF()">
+<span>Considerar todo o período</span>
+</label>
+<div class="pdf-periodo-grid">
+<label>
+Data inicial
+<input id="pdfDataInicial" type="date" disabled onchange="atualizarResumoFiltrosPDF()">
+</label>
+<label>
+Data final
+<input id="pdfDataFinal" type="date" disabled onchange="atualizarResumoFiltrosPDF()">
+</label>
+</div>
+<div id="pdfPeriodoDescricao" class="pdf-info">Todos os registros serão considerados.</div>
+</div>
+<!-- =========================================================
+03 AÇÕES / ATIVOS
+========================================================= -->
+<div class="relatorio-filtro relatorio-filtro-ativos">
+<div class="relatorio-filtro-titulo">
+<span>03</span>
+<div>
+<strong>Ações / Ativos</strong>
+<small>Escolha todos ou ativos específicos</small>
+</div>
+</div>
+<label class="pdf-periodo-todos">
+<input type="checkbox" id="pdfTodosAtivos" checked onchange="alternarAtivosPDF()">
+<span>Incluir todas as ações</span>
+</label>
+<div class="pdf-busca-ativos">
+<input id="pdfBuscaAtivo" type="search" placeholder="Buscar empresa ou código..." oninput="filtrarAtivosPDF()" disabled>
+</div>
+<div id="pdfListaAtivos" class="pdf-lista-ativos pdf-lista-desabilitada">
+<div class="pdf-sem-ativos">Os ativos serão carregados automaticamente.</div>
+</div>
+<div class="pdf-acoes-mini">
+<button id="btnPDFMarcarAtivos" type="button" onclick="marcarTodosAtivosPDF()" disabled>Marcar todos</button>
+<button id="btnPDFLimparAtivos" type="button" onclick="desmarcarTodosAtivosPDF()" disabled>Limpar</button>
+</div>
+</div>
+</div>
+<!-- =========================================================
+RESUMO DA SELEÇÃO
+========================================================= -->
+<div class="pdf-resumo-selecao">
+<div class="pdf-resumo-item">
+<span>CONTEÚDO</span>
+<strong id="pdfResumoConteudo">Resumo</strong>
+</div>
+<div class="pdf-resumo-item">
+<span>PERÍODO</span>
+<strong id="pdfResumoPeriodo">Todo o período</strong>
+</div>
+<div class="pdf-resumo-item">
+<span>AÇÕES</span>
+<strong id="pdfResumoAtivos">Todas</strong>
+</div>
+<button class="btn btn-gerar-pdf-mobile" type="button" onclick="exportarPDFSelecionado()">📄 Gerar relatório</button>
+</div>
+</div>
+<!-- =========================================================
+KPIs
+========================================================= -->
 <div class="kpis">
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>VALOR INVESTIDO</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
 </div>
 <b id="kInvestido" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
@@ -245,7 +418,9 @@ PAINEL/RESUMO
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>LUCRO/PREJUÍZO ACUMULADO</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
 </div>
 <b id="kLucro" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
@@ -253,57 +428,53 @@ PAINEL/RESUMO
 <small>TAXAS</small>
 <b id="kTaxas">—</b>
 </div>
+<div class="kpi">
+<small>IRRF</small>
+<b id="kIRRF">—</b>
+</div>
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>COMPRAS</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
 </div>
 <b id="kCompras" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
 <div class="kpi kpi-sensivel">
 <div class="kpi-topo">
 <small>VENDAS</small>
-<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores"><span class="icone-visibilidade">👁</span></button>
+<button class="btn-olho" type="button" onclick="alternarValores()" title="Mostrar ou ocultar valores" aria-label="Mostrar ou ocultar valores">
+<span class="icone-visibilidade">👁</span>
+</button>
 </div>
 <b id="kVendas" class="valor-sensivel valores-ocultos" data-valor="">••••••</b>
 </div>
 </div>
+<!-- =========================================================
+GRÁFICOS
+========================================================= -->
 <div class="grid2">
 <div class="card">
 <h3>Resultado realizado por mês</h3>
-<div class="chartbox"><canvas id="grafResultado"></canvas></div>
+<div class="chartbox">
+<canvas id="grafResultado"></canvas>
+</div>
 </div>
 <div class="card">
 <h3>Capital investido por ativo</h3>
-<div class="chartbox"><canvas id="grafCarteira"></canvas></div>
+<div class="chartbox">
+<canvas id="grafCarteira"></canvas>
 </div>
 </div>
+</div>
+<!-- =========================================================
+RESUMO DA CARTEIRA
+========================================================= -->
 <div class="card" style="margin-top:14px">
 <h3>Resumo da carteira atual</h3>
 <div id="resumoPainel"></div>
 </div>
-<div class="card" style="margin-top:14px">
-<div style="display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap">
-<div>
-<h3 style="margin:0 0 5px">Salvar relatório em PDF</h3>
-<p class="muted" style="margin:0">Escolha abaixo quais painéis deseja incluir no relatório.</p>
-</div>
-<button class="btn" type="button" onclick="exportarPDFSelecionado()">📄 Salvar PDF</button>
-</div>
-<div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:16px">
-<label><input type="checkbox" id="pdfResumo" checked> Resumo</label>
-<label><input type="checkbox" id="pdfCarteira"> Carteira</label>
-<label><input type="checkbox" id="pdfOperacoes"> Operações</label>
-<label><input type="checkbox" id="pdfResultados"> Resultados</label>
-<label><input type="checkbox" id="pdfTaxas"> Taxas</label>
-<label><input type="checkbox" id="pdfIRRF"> IRRF</label>
-</div>
-<div style="display:flex;gap:8px;margin-top:14px">
-<button class="btn sec" type="button" onclick="marcarTodosPDF()">Marcar todos</button>
-<button class="btn sec" type="button" onclick="desmarcarTodosPDF()">Desmarcar todos</button>
-</div>
-</div>
-  
 </section>
 <!-- =========================================================
 CARTEIRA
