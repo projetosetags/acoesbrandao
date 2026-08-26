@@ -34,7 +34,7 @@ button,input,select{font:inherit}
 .wrap{max-width:1500px;margin:auto;padding:22px}
 .aba{display:none}
 .aba.ativa{display:block}
-.kpis{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:12px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(180px,1fr));gap:12px;margin-top:14px}
 .kpi,.card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 4px 18px #0f172a0d}
 .kpi{padding:18px;min-width:0}
 .kpi small{color:#64748b;font-weight:700;font-size:11px}
@@ -131,17 +131,21 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .resultado-liquido{font-weight:900;white-space:nowrap}
 .form-taxas{grid-template-columns:180px 1fr 1fr auto}
 .form-irrf{grid-template-columns:180px 1fr auto}
-#tabelaIRRF .tablewrap{max-height:650px}
-#tabelaIRRF table{width:100%;table-layout:fixed;font-size:12px}
-#tabelaIRRF th{padding:7px 10px;height:32px;font-size:11px}
-#tabelaIRRF td{padding:5px 10px;height:34px}
-#tabelaIRRF th:nth-child(1),#tabelaIRRF td:nth-child(1){width:35%;text-align:left}
-#tabelaIRRF th:nth-child(2),#tabelaIRRF td:nth-child(2){width:45%;text-align:right}
-#tabelaIRRF th:nth-child(3),#tabelaIRRF td:nth-child(3){width:20%;text-align:center}
+/*=========================================================
+PAINEL IRRF - TABELA ORGANIZADA
+=========================================================*/
+#tabelaIRRF .tablewrap{width:100%;overflow:auto;max-height:650px}
+#tabelaIRRF table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}
+#tabelaIRRF th{height:32px;padding:7px 10px;background:#f8fafc;color:#475569;font-size:11px;font-weight:800;vertical-align:middle;border-bottom:1px solid #cbd5e1}
+#tabelaIRRF td{height:34px;padding:5px 10px;vertical-align:middle;border-bottom:1px solid #eef2f7}
 #tabelaIRRF tbody tr:hover{background:#f8fafc}
-.total-irrf{display:flex;justify-content:flex-end;align-items:center;gap:20px;padding:14px 10px 4px;border-top:2px solid #e2e8f0}
-.total-irrf span{font-size:11px;font-weight:800;color:#64748b}
-.total-irrf strong{font-size:17px;color:#0f172a}
+#tabelaIRRF th:nth-child(1),#tabelaIRRF td:nth-child(1){width:35%;text-align:left}
+#tabelaIRRF th:nth-child(2),#tabelaIRRF td:nth-child(2){width:50%;text-align:right}
+#tabelaIRRF th:nth-child(3),#tabelaIRRF td:nth-child(3){width:15%;text-align:center}
+#tabelaIRRF th:nth-child(2),#tabelaIRRF td:nth-child(2){background:#f8fafc}
+#tabelaIRRF td:nth-child(2){font-weight:800;color:#0f172a;font-variant-numeric:tabular-nums}
+.irrf-valor{font-weight:800;color:#0f172a;white-space:nowrap}
+
 /*=========================================================
 EXPORTAÇÃO PDF
 =========================================================*/
