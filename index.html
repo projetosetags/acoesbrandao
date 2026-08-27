@@ -58,17 +58,11 @@ button,input,select{font:inherit}
 /*=========================================================
 006 CARDS E GRÁFICOS
 =========================================================*/
-.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px}
-.card{padding:18px}
-.card h3{margin:0 0 14px;font-size:15px}
-/*=========================================================
-006 CARDS E GRÁFICOS
-=========================================================*/
 .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}
 .card{padding:18px}
 .card h3{margin:0 0 14px;font-size:15px}
-.chartbox{height:360px;position:relative;width:100%}
-.chartbox canvas{width:100%!important;height:100%!important}
+.chartbox{height:360px;position:relative;width:100%;min-width:0}
+.chartbox canvas{display:block;width:100%!important;height:100%!important;max-width:100%}
 /*=========================================================
 007 BARRA DE FERRAMENTAS E CAMPOS
 =========================================================*/
@@ -130,14 +124,26 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 /*=========================================================
 014 PAINEL OPERAÇÕES - TABELA ORGANIZADA
 =========================================================*/
-#tabelaOperacoes .tablewrap{width:100%;overflow-x:auto;max-height:650px;-webkit-overflow-scrolling:touch}
-#tabelaOperacoes table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}
-#tabelaOperacoes th{height:34px;padding:7px 10px;background:#f8fafc;color:#475569;font-size:11px;font-weight:800;line-height:1.15;vertical-align:middle;border-bottom:1px solid #cbd5e1;white-space:nowrap}
-#tabelaOperacoes td{height:34px;padding:5px 10px;line-height:1.15;vertical-align:middle;border-bottom:1px solid #eef2f7;white-space:nowrap;font-variant-numeric:tabular-nums}
+#tabelaOperacoes .tablewrap{width:100%;overflow-x:auto;overflow-y:auto;max-height:650px;-webkit-overflow-scrolling:touch}
+#tabelaOperacoes table{width:100%;min-width:900px;table-layout:fixed;border-collapse:collapse;font-size:12px}
+#tabelaOperacoes th{height:36px;padding:8px 10px;background:#f8fafc;color:#475569;font-size:11px;font-weight:800;line-height:1.15;vertical-align:middle;border-bottom:1px solid #cbd5e1;white-space:nowrap}
+#tabelaOperacoes td{height:36px;padding:6px 10px;line-height:1.15;vertical-align:middle;border-bottom:1px solid #eef2f7;white-space:nowrap;font-variant-numeric:tabular-nums}
 #tabelaOperacoes tbody tr:hover{background:#f8fafc}
-#tabelaOperacoes th:nth-child(1),#tabelaOperacoes td:nth-child(1){width:10%;text-align:left}
-#tabelaOperacoes th:nth-child(2),#tabelaOperacoes td:nth-child(2){width:24%;text-align:left}
-#tabelaOperacoes th:nth-child(3),#tabelaOperacoes td:nth-child(3){width:10%;
+#tabelaOperacoes th:nth-child(1),#tabelaOperacoes td:nth-child(1){width:11%;text-align:left}
+#tabelaOperacoes th:nth-child(2),#tabelaOperacoes td:nth-child(2){width:23%;text-align:left}
+#tabelaOperacoes th:nth-child(3),#tabelaOperacoes td:nth-child(3){width:10%;text-align:left}
+#tabelaOperacoes th:nth-child(4),#tabelaOperacoes td:nth-child(4){width:10%;text-align:center}
+#tabelaOperacoes th:nth-child(5),#tabelaOperacoes td:nth-child(5){width:9%;text-align:right}
+#tabelaOperacoes th:nth-child(6),#tabelaOperacoes td:nth-child(6){width:12%;text-align:right}
+#tabelaOperacoes th:nth-child(7),#tabelaOperacoes td:nth-child(7){width:15%;text-align:right}
+#tabelaOperacoes th:nth-child(8),#tabelaOperacoes td:nth-child(8){width:10%;text-align:center}
+#tabelaOperacoes td:nth-child(1){color:#334155}
+#tabelaOperacoes td:nth-child(2){font-weight:600;color:#334155;overflow:hidden;text-overflow:ellipsis}
+#tabelaOperacoes td:nth-child(3){font-weight:700;color:#0f172a}
+#tabelaOperacoes td:nth-child(5),#tabelaOperacoes td:nth-child(6),#tabelaOperacoes td:nth-child(7){font-variant-numeric:tabular-nums}
+#tabelaOperacoes td:nth-child(7){font-weight:800;color:#0f172a;background:#f8fafc}
+#tabelaOperacoes .tag{display:inline-flex;align-items:center;justify-content:center;min-width:58px;padding:4px 8px;font-size:10px}
+#tabelaOperacoes .btn-excluir-mini{display:inline-flex;align-items:center;justify-content:center;min-width:52px;height:25px;padding:4px 8px}
 /*=========================================================
 015 PAINEL TAXAS - TABELA ORGANIZADA
 =========================================================*/
@@ -331,7 +337,7 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .card{padding:14px}
 #tabelaCarteira table,#resumoPainel table{min-width:850px}
 #tabelaMensal table{min-width:900px}
-#tabelaOperacoes table{min-width:760px}
+#tabelaOperacoes table{min-width:900px}
 .exportar-box{padding:14px}
 .exportar-controles{display:block}
 .exportar-opcoes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;width:100%;margin-bottom:10px}
