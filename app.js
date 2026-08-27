@@ -8,6 +8,9 @@ let CALC=null
 let CHART1=null
 let CHART2=null
 let VALORES_VISIVEIS=false
+if(typeof Chart!=='undefined'&&typeof ChartDataLabels!=='undefined'){
+Chart.register(ChartDataLabels)
+}
 const brl=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const num=v=>(Number(v)||0).toLocaleString('pt-BR',{maximumFractionDigits:2})
 const dataBR=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—'
