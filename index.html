@@ -128,15 +128,16 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .muted{color:#64748b;font-size:12px}
 .alert{padding:10px 12px;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-size:12px;margin-bottom:12px}
 /*=========================================================
-014 PAINEL OPERAÇÕES - TABELA COMPACTA
+014 PAINEL OPERAÇÕES - TABELA ORGANIZADA
 =========================================================*/
-#tabelaOperacoes .tablewrap{max-height:650px}
-#tabelaOperacoes table{font-size:12px}
-#tabelaOperacoes th{padding:7px 9px;height:32px;font-size:11px;line-height:1.15}
-#tabelaOperacoes td{padding:5px 9px;height:34px;line-height:1.15;vertical-align:middle}
+#tabelaOperacoes .tablewrap{width:100%;overflow-x:auto;max-height:650px;-webkit-overflow-scrolling:touch}
+#tabelaOperacoes table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:12px}
+#tabelaOperacoes th{height:34px;padding:7px 10px;background:#f8fafc;color:#475569;font-size:11px;font-weight:800;line-height:1.15;vertical-align:middle;border-bottom:1px solid #cbd5e1;white-space:nowrap}
+#tabelaOperacoes td{height:34px;padding:5px 10px;line-height:1.15;vertical-align:middle;border-bottom:1px solid #eef2f7;white-space:nowrap;font-variant-numeric:tabular-nums}
 #tabelaOperacoes tbody tr:hover{background:#f8fafc}
-#tabelaOperacoes .tag{padding:3px 7px;font-size:10px}
-#tabelaOperacoes td:last-child{width:62px;text-align:center}
+#tabelaOperacoes th:nth-child(1),#tabelaOperacoes td:nth-child(1){width:10%;text-align:left}
+#tabelaOperacoes th:nth-child(2),#tabelaOperacoes td:nth-child(2){width:24%;text-align:left}
+#tabelaOperacoes th:nth-child(3),#tabelaOperacoes td:nth-child(3){width:10%;
 /*=========================================================
 015 PAINEL TAXAS - TABELA ORGANIZADA
 =========================================================*/
