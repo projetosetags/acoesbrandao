@@ -590,251 +590,305 @@ box.innerHTML=tabela(['Data','IRRF',''],rows)
 }
 }
 /*=========================================================
-018 RENDERIZAR GRÁFICOS
+XXX GRÁFICOS DO RESUMO - HORIZONTAL + PIZZA COLORIDA
 =========================================================*/
 function renderGraficos(){
-if(typeof Chart==='undefined'||!CALC)return
-let grafResultado=document.getElementById('grafResultado')
-let grafCarteira=document.getElementById('grafCarteira')
-/*=========================================================
-GRÁFICO RESULTADO MENSAL
-=========================================================*/
-let labels=CALC.mensal.map(x=>mesBR(x.mes+'-01'))
-let lucros=CALC.mensal.map(x=>{
-let irrfMes=TAXAS.filter(t=>String(t.data||'').slice(0,7)===x.mes).reduce((s,t)=>s+(Number(t.irrf)||0),0)
-return Number(x.lucro||0)-Number(x.taxas||0)-irrfMes
-})
-if(CHART1){
-CHART1.destroy()
-CHART1=null
+if(!CALC)return
+if(window.grafResultadoObj){
+window.grafResultadoObj.destroy()
+window.grafResultadoObj=null
 }
-if(grafResultado){
-CHART1=new Chart(grafResultado,{
+if(window.grafCarteiraObj){
+window.grafCarteiraObj.destroy()
+window.grafCarteiraObj=null
+}
+/*=========================================================
+GRÁFICO 1 - RESULTADO MENSAL EM BARRAS HORIZONTAIS
+=========================================================*/
+let meses=CALC.mensal||[]
+let mesesGrafico=[...meses].reverse()
+let labelsResultado=mesesGrafico.map(x=>x.mesLabel||x.mes||'')
+let valoresResultado=mesesGrafico.map(x=>{
+let bruto=Number(x.resultado||x.resultadoBruto||0)
+let taxas=Number(x.taxas||0)
+let irrf=Number(x.irrf||0)
+return bruto-taxas-irrf
+})
+let coresResultado=valoresResultado.map((valor,i)=>{
+if(valor>0){
+let verdes=[
+'#16a34a',
+'#22c55e',
+'#15803d',
+'#4ade80',
+'#166534',
+'#059669'
+]
+return verdes[i%verdes.length]
+}
+if(valor<0){
+let vermelhos=[
+'#dc2626',
+'#ef4444',
+'#b91c1c',
+'#f87171',
+'#991b1b',
+'#e11d48'
+]
+return vermelhos[i%vermelhos.length]
+}
+return '#94a3b8'
+})
+let canvasResultado=document.getElementById('grafResultado')
+if(canvasResultado){
+window.grafResultadoObj=new Chart(canvasResultado,{
 type:'bar',
 data:{
-labels:labels,
+labels:labelsResultado,
 datasets:[{
-label:'Resultado após taxas',
-data:lucros,
-backgroundColor:lucros.map(v=>v>=0?'rgba(22,163,74,.78)':'rgba(220,38,38,.78)'),
-borderColor:lucros.map(v=>v>=0?'#15803d':'#b91c1c'),
+label:'Resultado após Taxas + IRRF',
+data:valoresResultado,
+backgroundColor:coresResultado,
+borderColor:coresResultado,
 borderWidth:1,
-borderRadius:5,
-maxBarThickness:55
+borderRadius:7,
+borderSkipped:false,
+barPercentage:.72,
+categoryPercentage:.78
 }]
 },
 options:{
+indexAxis:'y',
 responsive:true,
 maintainAspectRatio:false,
+animation:{
+duration:700
+},
+interaction:{
+mode:'nearest',
+axis:'y',
+intersect:false
+},
+layout:{
+padding:{
+top:8,
+right:65,
+bottom:5,
+left:5
+}
+},
 plugins:{
 legend:{
 display:false
 },
 tooltip:{
-backgroundColor:'#0f172a',
-titleColor:'#ffffff',
-bodyColor:'#ffffff',
-padding:12,
-cornerRadius:8,
 callbacks:{
-label:ctx=>brl(ctx.raw)
+label:function(context){
+return ' '+moeda(Number(context.raw||0))
+}
 }
 },
 datalabels:{
-display:false
+display:true,
+anchor:function(context){
+return Number(context.dataset.data[context.dataIndex]||0)>=0?'end':'start'
+},
+align:function(context){
+return Number(context.dataset.data[context.dataIndex]||0)>=0?'right':'left'
+},
+offset:5,
+clamp:true,
+clip:false,
+color:function(context){
+let valor=Number(context.dataset.data[context.dataIndex]||0)
+if(valor>0)return '#15803d'
+if(valor<0)return '#dc2626'
+return '#64748b'
+},
+font:{
+size:10,
+weight:'800'
+},
+formatter:function(valor){
+return moeda(valor)
+}
 }
 },
 scales:{
 x:{
+beginAtZero:true,
 grid:{
+color:'#e2e8f0',
+drawBorder:false
+},
+border:{
 display:false
 },
 ticks:{
 color:'#64748b',
 font:{
-size:11,
-weight:'600'
+size:10
+},
+callback:function(value){
+let n=Number(value||0)
+if(Math.abs(n)>=1000000)return 'R$ '+(n/1000000).toFixed(1).replace('.',',')+' mi'
+if(Math.abs(n)>=1000)return 'R$ '+(n/1000).toFixed(1).replace('.',',')+' mil'
+return 'R$ '+n.toLocaleString('pt-BR')
 }
 }
 },
 y:{
-beginAtZero:true,
 grid:{
-color:'rgba(148,163,184,.15)'
+display:false
+},
+border:{
+display:false
 },
 ticks:{
-color:'#64748b',
-callback:v=>'R$ '+Number(v).toLocaleString('pt-BR')
+color:'#334155',
+font:{
+size:11,
+weight:'700'
 }
 }
 }
 }
+},
+plugins:[ChartDataLabels]
 })
 }
 /*=========================================================
-GRÁFICO ROSCA - CAPITAL INVESTIDO
+GRÁFICO 2 - CAPITAL INVESTIDO POR ATIVO EM PIZZA
 =========================================================*/
-let ativos=CALC.carteira
-.filter(x=>Number(x.custo)>0)
-.sort((a,b)=>Number(b.custo)-Number(a.custo))
-if(CHART2){
-CHART2.destroy()
-CHART2=null
-}
-if(!grafCarteira)return
-if(!ativos.length){
-let contexto=grafCarteira.getContext('2d')
-contexto.clearRect(0,0,grafCarteira.width,grafCarteira.height)
-return
-}
-let totalInvestido=ativos.reduce((total,ativo)=>total+(Number(ativo.custo)||0),0)
-let labelsAtivos=ativos.map(ativo=>ativo.codigo)
-let valoresAtivos=ativos.map(ativo=>Number(ativo.custo)||0)
-let coresAtivos=[
+let carteira=(CALC.carteira||[]).filter(x=>Number(x.qtd||x.quantidade||0)>0)
+let labelsCarteira=carteira.map(x=>x.codigo||x.ativo||x.empresa||'Ativo')
+let valoresCarteira=carteira.map(x=>{
+let qtd=Number(x.qtd||x.quantidade||0)
+let medio=Number(x.precoMedio||x.preco_medio||x.pm||0)
+let custo=Number(x.custoAtual||x.custo_atual||0)
+return custo>0?custo:qtd*medio
+})
+let paletaCarteira=[
 '#2563eb',
-'#0f766e',
+'#16a34a',
+'#f59e0b',
+'#dc2626',
 '#7c3aed',
-'#ea580c',
 '#0891b2',
-'#65a30d',
+'#ea580c',
 '#db2777',
-'#ca8a04',
-'#475569',
+'#4f46e5',
+'#65a30d',
+'#0d9488',
 '#9333ea',
 '#0284c7',
-'#16a34a',
-'#e11d48',
-'#4f46e5',
-'#059669',
 '#d97706',
-'#0369a1',
 '#be123c',
-'#6d28d9',
-'#047857'
+'#475569',
+'#059669',
+'#c026d3',
+'#0369a1',
+'#84cc16'
 ]
-CHART2=new Chart(grafCarteira,{
+let coresCarteira=labelsCarteira.map((_,i)=>paletaCarteira[i%paletaCarteira.length])
+let canvasCarteira=document.getElementById('grafCarteira')
+if(canvasCarteira){
+window.grafCarteiraObj=new Chart(canvasCarteira,{
 type:'doughnut',
 data:{
-labels:labelsAtivos,
+labels:labelsCarteira,
 datasets:[{
-data:valoresAtivos,
-backgroundColor:ativos.map((ativo,i)=>coresAtivos[i%coresAtivos.length]),
+data:valoresCarteira,
+backgroundColor:coresCarteira,
 borderColor:'#ffffff',
 borderWidth:3,
-hoverBorderWidth:3,
-hoverOffset:7
+hoverBorderWidth:4,
+hoverOffset:8
 }]
 },
-plugins:[
-typeof ChartDataLabels!=='undefined'?ChartDataLabels:{}
-],
 options:{
 responsive:true,
 maintainAspectRatio:false,
-cutout:'62%',
+cutout:'54%',
+animation:{
+animateRotate:true,
+animateScale:true,
+duration:800
+},
 layout:{
-padding:{
-top:15,
-right:10,
-bottom:15,
-left:10
-}
+padding:8
 },
 plugins:{
 legend:{
 display:true,
 position:'right',
-align:'center',
 labels:{
 usePointStyle:true,
 pointStyle:'circle',
 boxWidth:9,
 boxHeight:9,
-padding:14,
+padding:12,
 color:'#334155',
 font:{
-size:12,
-weight:'600'
+size:10,
+weight:'700'
 },
 generateLabels:function(chart){
-let dataset=chart.data.datasets[0]
-return chart.data.labels.map((label,i)=>{
-let valor=Number(dataset.data[i])||0
-let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
-let meta=chart.getDatasetMeta(0)
-let estilo=meta.controller.getStyle(i)
+let data=chart.data
+if(!data.labels.length)return[]
+let total=data.datasets[0].data.reduce((s,v)=>s+Number(v||0),0)
+return data.labels.map((label,i)=>{
+let valor=Number(data.datasets[0].data[i]||0)
+let percentual=total>0?(valor/total)*100:0
 return{
-text:label+'   '+percentual.toLocaleString('pt-BR',{
-minimumFractionDigits:1,
-maximumFractionDigits:1
-})+'%',
-fillStyle:estilo.backgroundColor,
-strokeStyle:estilo.backgroundColor,
+text:label+' • '+percentual.toFixed(1).replace('.',',')+'%',
+fillStyle:data.datasets[0].backgroundColor[i],
+strokeStyle:data.datasets[0].backgroundColor[i],
 lineWidth:0,
-fontColor:'#334155',
-hidden:!chart.getDataVisibility(i),
-index:i
+hidden:false,
+index:i,
+pointStyle:'circle'
 }
 })
 }
 }
 },
 tooltip:{
-backgroundColor:'#0f172a',
-titleColor:'#ffffff',
-bodyColor:'#ffffff',
-padding:12,
-cornerRadius:8,
-displayColors:true,
 callbacks:{
-title:function(context){
-let indice=context[0].dataIndex
-let ativo=ativos[indice]
-return ativo.codigo+' • '+ativo.empresa
-},
 label:function(context){
-let valor=Number(context.raw)||0
-let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
-return brl(valor)+' • '+percentual.toLocaleString('pt-BR',{
-minimumFractionDigits:1,
-maximumFractionDigits:1
-})+'%'
+let valor=Number(context.raw||0)
+let total=context.dataset.data.reduce((s,v)=>s+Number(v||0),0)
+let percentual=total>0?(valor/total)*100:0
+return ' '+context.label+': '+moeda(valor)+' ('+percentual.toFixed(1).replace('.',',')+'%)'
 }
 }
 },
 datalabels:{
 display:function(context){
-let valor=Number(context.dataset.data[context.dataIndex])||0
-if(totalInvestido<=0)return false
-let percentual=(valor/totalInvestido)*100
-return percentual>=5
-},
-formatter:function(valor,context){
-let percentual=totalInvestido>0?(Number(valor)/totalInvestido)*100:0
-let codigo=context.chart.data.labels[context.dataIndex]
-return codigo+'\n'+percentual.toLocaleString('pt-BR',{
-minimumFractionDigits:1,
-maximumFractionDigits:1
-})+'%'
+let valores=context.dataset.data
+let total=valores.reduce((s,v)=>s+Number(v||0),0)
+let valor=Number(valores[context.dataIndex]||0)
+let percentual=total>0?(valor/total)*100:0
+return percentual>=4
 },
 color:'#ffffff',
-textAlign:'center',
-anchor:'center',
-align:'center',
-clamp:true,
-font:function(context){
-let valor=Number(context.dataset.data[context.dataIndex])||0
-let percentual=totalInvestido>0?(valor/totalInvestido)*100:0
-return{
-weight:'700',
-size:percentual>=15?12:11
+font:{
+size:10,
+weight:'900'
+},
+textStrokeColor:'rgba(15,23,42,.35)',
+textStrokeWidth:2,
+formatter:function(valor,context){
+let total=context.dataset.data.reduce((s,v)=>s+Number(v||0),0)
+let percentual=total>0?(Number(valor||0)/total)*100:0
+return percentual.toFixed(1).replace('.',',')+'%'
+}
+}
 }
 },
-textStrokeWidth:0
-}
-}
-}
+plugins:[ChartDataLabels]
 })
+}
 }
 /*=========================================================
 019 SALVAR OPERAÇÃO
