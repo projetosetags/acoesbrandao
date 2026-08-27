@@ -56,13 +56,18 @@ button,input,select{font:inherit}
 .kpi b{display:block;font-size:23px;margin-top:7px;overflow:hidden;text-overflow:ellipsis}
 .kpi-topo{display:flex;align-items:center;justify-content:space-between;gap:8px}
 /*=========================================================
-006 CARDS E GRÁFICOS
+006 CARDS E GRÁFICOS DO RESUMO
 =========================================================*/
-.grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
 .card{padding:18px}
 .card h3{margin:0 0 14px;font-size:15px}
-.chartbox{height:360px;position:relative;width:100%;min-width:0}
-.chartbox canvas{display:block;width:100%!important;height:100%!important;max-width:100%}
+.chartbox{position:relative;width:100%;height:390px;min-height:390px}
+.chartbox canvas{display:block;width:100%!important;height:100%!important}
+#grafResultado,#grafCarteira{width:100%!important;height:100%!important}
+@media(max-width:650px){
+.grid2{grid-template-columns:1fr}
+.chartbox{height:380px;min-height:380px}
+}
 /*=========================================================
 007 BARRA DE FERRAMENTAS E CAMPOS
 =========================================================*/
