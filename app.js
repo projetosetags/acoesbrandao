@@ -8,9 +8,7 @@ let CALC=null
 let CHART1=null
 let CHART2=null
 let VALORES_VISIVEIS=false
-if(typeof Chart!=='undefined'&&typeof ChartDataLabels!=='undefined'){
-Chart.register(ChartDataLabels)
-}
+
 const brl=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const num=v=>(Number(v)||0).toLocaleString('pt-BR',{maximumFractionDigits:2})
 const dataBR=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—'
@@ -630,72 +628,44 @@ box.innerHTML=tabela(['Data','IRRF',''],rows)
 =========================================================*/
 function renderGraficos(){
 if(!CALC)return
-if(typeof Chart==='undefined')return
-
+if(typeof Chart==='undefined'){
+console.error('Chart.js não foi carregado.')
+return
+}
 /*=========================================================
-018.1 RESULTADO MENSAL
+018.1 RESULTADO MENSAL - BARRAS HORIZONTAIS
 =========================================================*/
 let irrfPorMes={}
-
 TAXAS.forEach(t=>{
 let mes=String(t.data||'').slice(0,7)
 if(!mes)return
 irrfPorMes[mes]=(irrfPorMes[mes]||0)+(Number(t.irrf)||0)
 })
-
 let meses=[...(CALC.mensal||[])].reverse()
-
 let labelsResultado=meses.map(x=>{
 return mesBR(x.mes+'-01')
 })
-
 let valoresResultado=meses.map(x=>{
 let lucro=Number(x.lucro)||0
 let taxas=Number(x.taxas)||0
 let irrf=Number(irrfPorMes[x.mes])||0
 return lucro-taxas-irrf
 })
-
-let coresResultado=[
-'#2563eb',
-'#16a34a',
-'#f59e0b',
-'#dc2626',
-'#7c3aed',
-'#0891b2',
-'#ea580c',
-'#db2777',
-'#4f46e5',
-'#65a30d',
-'#0d9488',
-'#9333ea'
-]
-
+let coresResultado=['#2563eb','#16a34a','#f59e0b','#dc2626','#7c3aed','#0891b2','#ea580c','#db2777','#4f46e5','#65a30d','#0d9488','#9333ea']
 let canvasResultado=document.getElementById('grafResultado')
-
 if(canvasResultado){
-
 if(CHART1){
-
-CHART1.data.labels=labelsResultado
-CHART1.data.datasets[0].data=valoresResultado
-CHART1.data.datasets[0].backgroundColor=
-valoresResultado.map((_,i)=>coresResultado[i%coresResultado.length])
-
-CHART1.update('none')
-
-}else{
-
-CHART1=new Chart(canvasResultado,{
+CHART1.destroy()
+CHART1=null
+}
+CHART1=new Chart(canvasResultado.getContext('2d'),{
 type:'bar',
-
 data:{
 labels:labelsResultado,
-
 datasets:[{
+label:'Resultado realizado',
 data:valoresResultado,
-backgroundColor:
-valoresResultado.map((_,i)=>coresResultado[i%coresResultado.length]),
+backgroundColor:valoresResultado.map((_,i)=>coresResultado[i%coresResultado.length]),
 borderWidth:0,
 borderRadius:7,
 borderSkipped:false,
@@ -703,13 +673,11 @@ barPercentage:.72,
 categoryPercentage:.78
 }]
 },
-
 options:{
 indexAxis:'y',
 responsive:true,
 maintainAspectRatio:false,
 animation:false,
-
 layout:{
 padding:{
 top:5,
@@ -718,12 +686,10 @@ bottom:5,
 left:5
 }
 },
-
 plugins:{
 legend:{
 display:false
 },
-
 tooltip:{
 callbacks:{
 label:function(context){
@@ -732,50 +698,39 @@ return brl(Number(context.raw)||0)
 }
 }
 },
-
 scales:{
 x:{
 beginAtZero:true,
-
 grid:{
 color:'#e2e8f0'
 },
-
 border:{
 display:false
 },
-
 ticks:{
 color:'#64748b',
-
+font:{
+size:10,
+weight:'600'
+},
 callback:function(value){
 let n=Number(value)||0
-
-if(Math.abs(n)>=1000000){
-return 'R$ '+(n/1000000).toFixed(1).replace('.',',')+' mi'
-}
-
-if(Math.abs(n)>=1000){
-return 'R$ '+(n/1000).toFixed(1).replace('.',',')+' mil'
-}
-
+if(Math.abs(n)>=1000000)return 'R$ '+(n/1000000).toFixed(1).replace('.',',')+' mi'
+if(Math.abs(n)>=1000)return 'R$ '+(n/1000).toFixed(1).replace('.',',')+' mil'
 return 'R$ '+n.toLocaleString('pt-BR')
 }
 }
 },
-
 y:{
 grid:{
 display:false
 },
-
 border:{
 display:false
 },
-
 ticks:{
 color:'#334155',
-
+autoSkip:false,
 font:{
 size:11,
 weight:'700'
@@ -785,252 +740,143 @@ weight:'700'
 }
 }
 })
-
 }
-
-}
-
 /*=========================================================
-018.2 CAPITAL INVESTIDO POR ATIVO
-=========================================================*/
-let carteira=(CALC.carteira||[])
-.filter(a=>{
-return Number(a.qtd)>0&&Number(a.custo)>0
-})
-.sort((a,b)=>{
-return Number(b.custo)-Number(a.custo)
-})
-
-let labelsC/*=========================================================
 018.2 CAPITAL INVESTIDO POR ATIVO - BARRAS HORIZONTAIS
 =========================================================*/
-let carteira=(CALC.carteira||[])
+let carteira=[...(CALC.carteira||[])]
 .filter(a=>{
 return Number(a.qtd)>0&&Number(a.custo)>0
 })
 .sort((a,b)=>{
 return Number(b.custo)-Number(a.custo)
 })
-
 let labelsCarteira=carteira.map(a=>{
 let codigo=String(a.codigo||'').trim()
 let empresa=String(a.empresa||'').trim()
 if(codigo&&empresa)return codigo+' - '+empresa
 return codigo||empresa||'Ativo'
 })
-
 let valoresCarteira=carteira.map(a=>{
 return Number(a.custo)||0
 })
-
-let paletaCarteira=[
-'#2563eb',
-'#16a34a',
-'#f59e0b',
-'#dc2626',
-'#7c3aed',
-'#0891b2',
-'#ea580c',
-'#db2777',
-'#4f46e5',
-'#65a30d',
-'#0d9488',
-'#9333ea',
-'#0284c7',
-'#d97706',
-'#be123c',
-'#475569',
-'#059669',
-'#c026d3',
-'#0369a1',
-'#84cc16'
-]
-
+let paletaCarteira=['#2563eb','#16a34a','#f59e0b','#dc2626','#7c3aed','#0891b2','#ea580c','#db2777','#4f46e5','#65a30d','#0d9488','#9333ea','#0284c7','#d97706','#be123c','#475569','#059669','#c026d3','#0369a1','#84cc16']
 let coresCarteira=labelsCarteira.map((_,i)=>{
 return paletaCarteira[i%paletaCarteira.length]
 })
-
 let canvasCarteira=document.getElementById('grafCarteira')
-
 if(canvasCarteira){
-
 if(CHART2){
-
-CHART2.data.labels=labelsCarteira
-CHART2.data.datasets[0].data=valoresCarteira
-CHART2.data.datasets[0].backgroundColor=coresCarteira
-
-CHART2.update('none')
-
-}else{
-
-CHART2=new Chart(canvasCarteira,{
+CHART2.destroy()
+CHART2=null
+}
+CHART2=new Chart(canvasCarteira.getContext('2d'),{
 type:'bar',
-
 data:{
 labels:labelsCarteira,
-
 datasets:[{
 label:'Capital investido',
 data:valoresCarteira,
 backgroundColor:coresCarteira,
 borderWidth:0,
-borderRadius:6,
+borderRadius:7,
 borderSkipped:false,
 barPercentage:.72,
 categoryPercentage:.82
 }]
 },
-
 options:{
 indexAxis:'y',
 responsive:true,
 maintainAspectRatio:false,
 animation:false,
-
 layout:{
 padding:{
 top:5,
-right:85,
+right:15,
 bottom:5,
 left:5
 }
 },
-
 plugins:{
 legend:{
 display:false
 },
-
 tooltip:{
 callbacks:{
 label:function(context){
 return 'Capital investido: '+brl(Number(context.raw)||0)
 }
 }
-},
-
-datalabels:{
-display:true,
-anchor:'end',
-align:'right',
-offset:5,
-clamp:false,
-clip:false,
-
-color:'#334155',
-
-font:{
-size:10,
-weight:'800'
-},
-
-formatter:function(value){
-return brl(Number(value)||0)
-}
 }
 },
-
 scales:{
-
 x:{
 beginAtZero:true,
-
 grid:{
-color:'#e2e8f0',
-drawBorder:false
+color:'#e2e8f0'
 },
-
 border:{
 display:false
 },
-
 ticks:{
 color:'#64748b',
 font:{
 size:10,
 weight:'600'
 },
-
 callback:function(value){
-
 let n=Number(value)||0
-
-if(Math.abs(n)>=1000000){
-return 'R$ '+(n/1000000)
-.toFixed(1)
-.replace('.',',')+' mi'
-}
-
-if(Math.abs(n)>=1000){
-return 'R$ '+(n/1000)
-.toFixed(0)
-.replace('.',',')+' mil'
-}
-
+if(Math.abs(n)>=1000000)return 'R$ '+(n/1000000).toFixed(1).replace('.',',')+' mi'
+if(Math.abs(n)>=1000)return 'R$ '+(n/1000).toFixed(0).replace('.',',')+' mil'
 return 'R$ '+n.toLocaleString('pt-BR')
 }
 }
 },
-
 y:{
 grid:{
 display:false
 },
-
 border:{
 display:false
 },
-
 ticks:{
 color:'#334155',
 autoSkip:false,
-
 font:{
 size:10,
 weight:'700'
 },
-
 callback:function(value){
-
 let label=this.getLabelForValue(value)
-
-if(label.length>30){
-return label.substring(0,28)+'…'
-}
-
+if(label.length>32)return label.substring(0,30)+'…'
 return label
 }
 }
 }
-
 }
 }
-
 })
-
-}
-
 }
 /*=========================================================
 018.3 REDIMENSIONAMENTO FINAL
 =========================================================*/
 requestAnimationFrame(()=>{
-
 if(CHART1){
 try{
 CHART1.resize()
-}catch(e){}
+}catch(e){
+console.error('Erro ao redimensionar gráfico de resultados:',e)
 }
-
+}
 if(CHART2){
 try{
 CHART2.resize()
-}catch(e){}
+}catch(e){
+console.error('Erro ao redimensionar gráfico da carteira:',e)
 }
-
+}
 })
-
 }
 
 /*=========================================================
