@@ -621,30 +621,22 @@ if(box){
 box.innerHTML=tabela(['Data','IRRF',''],rows)
 }
 }
+
 /*=========================================================
 018 GRÁFICOS DO RESUMO
 =========================================================*/
 function renderGraficos(){
-if(!CALC||typeof Chart==='undefined')return
-
-if(CHART1){
-try{CHART1.destroy()}catch(e){}
-CHART1=null
-}
-
-if(CHART2){
-try{CHART2.destroy()}catch(e){}
-CHART2=null
-}
+if(!CALC)return
+if(typeof Chart==='undefined')return
 
 /*=========================================================
-GRÁFICO 1 - RESULTADO MENSAL HORIZONTAL
+018.1 RESULTADO MENSAL
 =========================================================*/
 let irrfPorMes={}
 
 TAXAS.forEach(t=>{
-if(!t.data)return
-let mes=String(t.data).slice(0,7)
+let mes=String(t.data||'').slice(0,7)
+if(!mes)return
 irrfPorMes[mes]=(irrfPorMes[mes]||0)+(Number(t.irrf)||0)
 })
 
@@ -680,17 +672,29 @@ let canvasResultado=document.getElementById('grafResultado')
 
 if(canvasResultado){
 
+if(CHART1){
+
+CHART1.data.labels=labelsResultado
+CHART1.data.datasets[0].data=valoresResultado
+CHART1.data.datasets[0].backgroundColor=
+valoresResultado.map((_,i)=>coresResultado[i%coresResultado.length])
+
+CHART1.update('none')
+
+}else{
+
 CHART1=new Chart(canvasResultado,{
 type:'bar',
 
 data:{
 labels:labelsResultado,
+
 datasets:[{
-label:'Resultado líquido',
 data:valoresResultado,
-backgroundColor:valoresResultado.map((_,i)=>coresResultado[i%coresResultado.length]),
+backgroundColor:
+valoresResultado.map((_,i)=>coresResultado[i%coresResultado.length]),
 borderWidth:0,
-borderRadius:8,
+borderRadius:7,
 borderSkipped:false,
 barPercentage:.72,
 categoryPercentage:.78
@@ -701,15 +705,12 @@ options:{
 indexAxis:'y',
 responsive:true,
 maintainAspectRatio:false,
-
-animation:{
-duration:600
-},
+animation:false,
 
 layout:{
 padding:{
-top:8,
-right:20,
+top:5,
+right:15,
 bottom:5,
 left:5
 }
@@ -723,7 +724,7 @@ display:false
 tooltip:{
 callbacks:{
 label:function(context){
-return brl(context.raw)
+return brl(Number(context.raw)||0)
 }
 }
 }
@@ -743,9 +744,6 @@ display:false
 
 ticks:{
 color:'#64748b',
-font:{
-size:10
-},
 
 callback:function(value){
 let n=Number(value)||0
@@ -784,16 +782,25 @@ weight:'700'
 }
 }
 })
+
+}
+
 }
 
 /*=========================================================
-GRÁFICO 2 - CAPITAL INVESTIDO POR ATIVO
+018.2 CAPITAL INVESTIDO POR ATIVO
 =========================================================*/
 let carteira=(CALC.carteira||[])
-.filter(a=>Number(a.qtd)>0&&Number(a.custo)>0)
-.sort((a,b)=>Number(b.custo)-Number(a.custo))
+.filter(a=>{
+return Number(a.qtd)>0&&Number(a.custo)>0
+})
+.sort((a,b)=>{
+return Number(b.custo)-Number(a.custo)
+})
 
-let labelsCarteira=carteira.map(a=>a.codigo)
+let labelsCarteira=carteira.map(a=>{
+return String(a.codigo||a.empresa||'Ativo')
+})
 
 let valoresCarteira=carteira.map(a=>{
 return Number(a.custo)||0
@@ -822,9 +829,22 @@ let paletaCarteira=[
 '#84cc16'
 ]
 
+let coresCarteira=
+labelsCarteira.map((_,i)=>paletaCarteira[i%paletaCarteira.length])
+
 let canvasCarteira=document.getElementById('grafCarteira')
 
 if(canvasCarteira){
+
+if(CHART2){
+
+CHART2.data.labels=labelsCarteira
+CHART2.data.datasets[0].data=valoresCarteira
+CHART2.data.datasets[0].backgroundColor=coresCarteira
+
+CHART2.update('none')
+
+}else{
 
 CHART2=new Chart(canvasCarteira,{
 type:'pie',
@@ -834,28 +854,20 @@ labels:labelsCarteira,
 
 datasets:[{
 data:valoresCarteira,
-backgroundColor:labelsCarteira.map((_,i)=>{
-return paletaCarteira[i%paletaCarteira.length]
-}),
+backgroundColor:coresCarteira,
 borderColor:'#ffffff',
 borderWidth:2,
-hoverBorderWidth:3,
-hoverOffset:7
+hoverOffset:5
 }]
 },
 
 options:{
 responsive:true,
 maintainAspectRatio:false,
-
-animation:{
-animateRotate:true,
-animateScale:true,
-duration:700
-},
+animation:false,
 
 layout:{
-padding:8
+padding:10
 },
 
 plugins:{
@@ -866,42 +878,40 @@ position:'right',
 labels:{
 usePointStyle:true,
 pointStyle:'circle',
-boxWidth:9,
-boxHeight:9,
-padding:11,
+boxWidth:10,
+boxHeight:10,
+padding:12,
 color:'#334155',
 
 font:{
-size:10,
+size:11,
 weight:'700'
 },
 
 generateLabels:function(chart){
 
 let data=chart.data
+let dataset=data.datasets[0]
 
-if(!data.labels||!data.labels.length){
-return[]
-}
+if(!data.labels||!dataset)return[]
 
-let valores=data.datasets[0].data
-
-let total=valores.reduce((s,v)=>{
+let total=dataset.data.reduce((s,v)=>{
 return s+(Number(v)||0)
 },0)
 
 return data.labels.map((label,i)=>{
 
-let valor=Number(valores[i])||0
-
-let percentual=total>0
-?(valor/total)*100
-:0
+let valor=Number(dataset.data[i])||0
+let percentual=total>0?(valor/total)*100:0
 
 return{
-text:label+'  '+percentual.toFixed(1).replace('.',',')+'%',
-fillStyle:data.datasets[0].backgroundColor[i],
-strokeStyle:data.datasets[0].backgroundColor[i],
+text:
+label+
+' • '+
+percentual.toFixed(1).replace('.',',')+
+'%',
+fillStyle:dataset.backgroundColor[i],
+strokeStyle:dataset.backgroundColor[i],
 lineWidth:0,
 hidden:false,
 index:i,
@@ -909,12 +919,14 @@ pointStyle:'circle'
 }
 
 })
+
 }
 }
 },
 
 tooltip:{
 callbacks:{
+
 label:function(context){
 
 let valor=Number(context.raw)||0
@@ -923,24 +935,50 @@ let total=context.dataset.data.reduce((s,v)=>{
 return s+(Number(v)||0)
 },0)
 
-let percentual=total>0
+let percentual=
+total>0
 ?(valor/total)*100
 :0
 
 return context.label+
 ': '+
 brl(valor)+
-' • '+
+' ('+
 percentual.toFixed(1).replace('.',',')+
-'%'
+'%)'
 }
+
 }
 }
 }
 }
 })
+
 }
+
 }
+
+/*=========================================================
+018.3 REDIMENSIONAMENTO FINAL
+=========================================================*/
+requestAnimationFrame(()=>{
+
+if(CHART1){
+try{
+CHART1.resize()
+}catch(e){}
+}
+
+if(CHART2){
+try{
+CHART2.resize()
+}catch(e){}
+}
+
+})
+
+}
+
 /*=========================================================
 019 SALVAR OPERAÇÃO
 =========================================================*/
