@@ -383,7 +383,11 @@ btn.setAttribute('aria-label',VALORES_VISIVEIS?'Ocultar valores':'Mostrar valore
 =========================================================*/
 function renderTudo(){
 if(!CALC)return
+try{
 carregarListasAtivos()
+}catch(e){
+console.error('Erro em carregarListasAtivos():',e)
+}
 let kInvestido=document.getElementById('kInvestido')
 let kQtd=document.getElementById('kQtd')
 let kLucro=document.getElementById('kLucro')
@@ -391,20 +395,48 @@ let kTaxas=document.getElementById('kTaxas')
 let kIRRF=document.getElementById('kIRRF')
 let kCompras=document.getElementById('kCompras')
 let kVendas=document.getElementById('kVendas')
-if(kInvestido)kInvestido.dataset.valor=brl(CALC.investido)
-if(kQtd)kQtd.textContent=num(CALC.qtd)
-if(kLucro)kLucro.dataset.valor=brl(CALC.realizado)
-if(kTaxas)kTaxas.textContent=brl(CALC.taxasTotal)
+if(kInvestido)kInvestido.dataset.valor=brl(CALC.investido||0)
+if(kQtd)kQtd.textContent=num(CALC.qtd||0)
+if(kLucro)kLucro.dataset.valor=brl(CALC.realizado||0)
+if(kTaxas)kTaxas.textContent=brl(CALC.taxasTotal||0)
 if(kIRRF)kIRRF.textContent=brl(calcularTotalIRRF())
-if(kCompras)kCompras.dataset.valor=brl(CALC.compras)
-if(kVendas)kVendas.dataset.valor=brl(CALC.vendas)
+if(kCompras)kCompras.dataset.valor=brl(CALC.compras||0)
+if(kVendas)kVendas.dataset.valor=brl(CALC.vendas||0)
+try{
 atualizarVisibilidadeValores()
+}catch(e){
+console.error('Erro em atualizarVisibilidadeValores():',e)
+}
+try{
 renderCarteira()
+}catch(e){
+console.error('Erro em renderCarteira():',e)
+}
+try{
 renderOperacoes()
+}catch(e){
+console.error('Erro em renderOperacoes():',e)
+}
+try{
 renderMensal()
+}catch(e){
+console.error('Erro em renderMensal():',e)
+}
+try{
 renderTaxas()
+}catch(e){
+console.error('Erro em renderTaxas():',e)
+}
+try{
 renderIRRF()
+}catch(e){
+console.error('Erro em renderIRRF():',e)
+}
+try{
 renderGraficos()
+}catch(e){
+console.error('Erro em renderGraficos():',e)
+}
 }
 /*=========================================================
 012 CRIAR TABELA
