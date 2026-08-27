@@ -501,19 +501,24 @@ box.innerHTML=tabela([
 015 RENDERIZAR RESULTADO MENSAL
 =========================================================*/
 function renderMensal(){
-if(!CALC)return
+let irrfPorMes={}
+TAXAS.forEach(t=>{
+if(!t.data)return
+let mes=String(t.data).slice(0,7)
+irrfPorMes[mes]=(irrfPorMes[mes]||0)+(Number(t.irrf)||0)
+})
 let rows=[...CALC.mensal].reverse().map(x=>{
-let liquido=x.lucro-x.taxas
-return `
-<tr>
+let irrf=irrfPorMes[x.mes]||0
+let resultadoFinal=Number(x.lucro||0)-Number(x.taxas||0)-irrf
+return `<tr>
 <td class="resultado-mes"><b>${mesBR(x.mes+'-01')}</b></td>
 <td class="right resultado-valor">${brl(x.compras)}</td>
 <td class="right resultado-valor">${brl(x.vendas)}</td>
 <td class="right resultado-bruto ${x.lucro>=0?'pos':'neg'}">${brl(x.lucro)}</td>
 <td class="right resultado-taxas">${brl(x.taxas)}</td>
-<td class="right resultado-liquido ${liquido>=0?'pos':'neg'}">${brl(liquido)}</td>
-</tr>
-`
+<td class="right resultado-irrf">${brl(irrf)}</td>
+<td class="right resultado-liquido ${resultadoFinal>=0?'pos':'neg'}">${brl(resultadoFinal)}</td>
+</tr>`
 })
 let box=document.getElementById('tabelaMensal')
 if(box){
@@ -523,7 +528,8 @@ box.innerHTML=tabela([
 'Vendas',
 'Resultado bruto',
 'Taxas',
-'Resultado após taxas'
+'IRRF',
+'Resultado após Taxas + IRRF'
 ],rows)
 }
 }
@@ -594,7 +600,10 @@ let grafCarteira=document.getElementById('grafCarteira')
 GRÁFICO RESULTADO MENSAL
 =========================================================*/
 let labels=CALC.mensal.map(x=>mesBR(x.mes+'-01'))
-let lucros=CALC.mensal.map(x=>x.lucro-x.taxas)
+let lucros=CALC.mensal.map(x=>{
+let irrfMes=TAXAS.filter(t=>String(t.data||'').slice(0,7)===x.mes).reduce((s,t)=>s+(Number(t.irrf)||0),0)
+return Number(x.lucro||0)-Number(x.taxas||0)-irrfMes
+})
 if(CHART1){
 CHART1.destroy()
 CHART1=null
