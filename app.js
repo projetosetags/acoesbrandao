@@ -798,8 +798,22 @@ return Number(a.qtd)>0&&Number(a.custo)>0
 return Number(b.custo)-Number(a.custo)
 })
 
+let labelsC/*=========================================================
+018.2 CAPITAL INVESTIDO POR ATIVO - BARRAS HORIZONTAIS
+=========================================================*/
+let carteira=(CALC.carteira||[])
+.filter(a=>{
+return Number(a.qtd)>0&&Number(a.custo)>0
+})
+.sort((a,b)=>{
+return Number(b.custo)-Number(a.custo)
+})
+
 let labelsCarteira=carteira.map(a=>{
-return String(a.codigo||a.empresa||'Ativo')
+let codigo=String(a.codigo||'').trim()
+let empresa=String(a.empresa||'').trim()
+if(codigo&&empresa)return codigo+' - '+empresa
+return codigo||empresa||'Ativo'
 })
 
 let valoresCarteira=carteira.map(a=>{
@@ -829,8 +843,9 @@ let paletaCarteira=[
 '#84cc16'
 ]
 
-let coresCarteira=
-labelsCarteira.map((_,i)=>paletaCarteira[i%paletaCarteira.length])
+let coresCarteira=labelsCarteira.map((_,i)=>{
+return paletaCarteira[i%paletaCarteira.length]
+})
 
 let canvasCarteira=document.getElementById('grafCarteira')
 
@@ -847,117 +862,153 @@ CHART2.update('none')
 }else{
 
 CHART2=new Chart(canvasCarteira,{
-type:'pie',
+type:'bar',
 
 data:{
 labels:labelsCarteira,
 
 datasets:[{
+label:'Capital investido',
 data:valoresCarteira,
 backgroundColor:coresCarteira,
-borderColor:'#ffffff',
-borderWidth:2,
-hoverOffset:5
+borderWidth:0,
+borderRadius:6,
+borderSkipped:false,
+barPercentage:.72,
+categoryPercentage:.82
 }]
 },
 
 options:{
+indexAxis:'y',
 responsive:true,
 maintainAspectRatio:false,
 animation:false,
 
 layout:{
-padding:10
+padding:{
+top:5,
+right:85,
+bottom:5,
+left:5
+}
 },
 
 plugins:{
 legend:{
-display:true,
-position:'right',
-
-labels:{
-usePointStyle:true,
-pointStyle:'circle',
-boxWidth:10,
-boxHeight:10,
-padding:12,
-color:'#334155',
-
-font:{
-size:11,
-weight:'700'
-},
-
-generateLabels:function(chart){
-
-let data=chart.data
-let dataset=data.datasets[0]
-
-if(!data.labels||!dataset)return[]
-
-let total=dataset.data.reduce((s,v)=>{
-return s+(Number(v)||0)
-},0)
-
-return data.labels.map((label,i)=>{
-
-let valor=Number(dataset.data[i])||0
-let percentual=total>0?(valor/total)*100:0
-
-return{
-text:
-label+
-' • '+
-percentual.toFixed(1).replace('.',',')+
-'%',
-fillStyle:dataset.backgroundColor[i],
-strokeStyle:dataset.backgroundColor[i],
-lineWidth:0,
-hidden:false,
-index:i,
-pointStyle:'circle'
-}
-
-})
-
-}
-}
+display:false
 },
 
 tooltip:{
 callbacks:{
-
 label:function(context){
+return 'Capital investido: '+brl(Number(context.raw)||0)
+}
+}
+},
 
-let valor=Number(context.raw)||0
+datalabels:{
+display:true,
+anchor:'end',
+align:'right',
+offset:5,
+clamp:false,
+clip:false,
 
-let total=context.dataset.data.reduce((s,v)=>{
-return s+(Number(v)||0)
-},0)
+color:'#334155',
 
-let percentual=
-total>0
-?(valor/total)*100
-:0
+font:{
+size:10,
+weight:'800'
+},
 
-return context.label+
-': '+
-brl(valor)+
-' ('+
-percentual.toFixed(1).replace('.',',')+
-'%)'
+formatter:function(value){
+return brl(Number(value)||0)
+}
+}
+},
+
+scales:{
+
+x:{
+beginAtZero:true,
+
+grid:{
+color:'#e2e8f0',
+drawBorder:false
+},
+
+border:{
+display:false
+},
+
+ticks:{
+color:'#64748b',
+font:{
+size:10,
+weight:'600'
+},
+
+callback:function(value){
+
+let n=Number(value)||0
+
+if(Math.abs(n)>=1000000){
+return 'R$ '+(n/1000000)
+.toFixed(1)
+.replace('.',',')+' mi'
+}
+
+if(Math.abs(n)>=1000){
+return 'R$ '+(n/1000)
+.toFixed(0)
+.replace('.',',')+' mil'
+}
+
+return 'R$ '+n.toLocaleString('pt-BR')
+}
+}
+},
+
+y:{
+grid:{
+display:false
+},
+
+border:{
+display:false
+},
+
+ticks:{
+color:'#334155',
+autoSkip:false,
+
+font:{
+size:10,
+weight:'700'
+},
+
+callback:function(value){
+
+let label=this.getLabelForValue(value)
+
+if(label.length>30){
+return label.substring(0,28)+'…'
+}
+
+return label
+}
+}
 }
 
 }
 }
-}
-}
+
 })
 
 }
 
 }
-
 /*=========================================================
 018.3 REDIMENSIONAMENTO FINAL
 =========================================================*/
