@@ -622,162 +622,159 @@ box.innerHTML=tabela(['Data','IRRF',''],rows)
 }
 }
 /*=========================================================
-XXX GRÁFICOS DO RESUMO - HORIZONTAL + PIZZA COLORIDA
+018 GRÁFICOS DO RESUMO
 =========================================================*/
 function renderGraficos(){
-if(!CALC)return
-if(window.grafResultadoObj){
-window.grafResultadoObj.destroy()
-window.grafResultadoObj=null
+if(!CALC||typeof Chart==='undefined')return
+
+if(CHART1){
+try{CHART1.destroy()}catch(e){}
+CHART1=null
 }
-if(window.grafCarteiraObj){
-window.grafCarteiraObj.destroy()
-window.grafCarteiraObj=null
+
+if(CHART2){
+try{CHART2.destroy()}catch(e){}
+CHART2=null
 }
+
 /*=========================================================
-GRÁFICO 1 - RESULTADO MENSAL EM BARRAS HORIZONTAIS
+GRÁFICO 1 - RESULTADO MENSAL HORIZONTAL
 =========================================================*/
-let meses=CALC.mensal||[]
-let mesesGrafico=[...meses].reverse()
-let labelsResultado=mesesGrafico.map(x=>x.mesLabel||x.mes||'')
-let valoresResultado=mesesGrafico.map(x=>{
-let bruto=Number(x.resultado||x.resultadoBruto||0)
-let taxas=Number(x.taxas||0)
-let irrf=Number(x.irrf||0)
-return bruto-taxas-irrf
+let irrfPorMes={}
+
+TAXAS.forEach(t=>{
+if(!t.data)return
+let mes=String(t.data).slice(0,7)
+irrfPorMes[mes]=(irrfPorMes[mes]||0)+(Number(t.irrf)||0)
 })
-let coresResultado=valoresResultado.map((valor,i)=>{
-if(valor>0){
-let verdes=[
+
+let meses=[...(CALC.mensal||[])].reverse()
+
+let labelsResultado=meses.map(x=>{
+return mesBR(x.mes+'-01')
+})
+
+let valoresResultado=meses.map(x=>{
+let lucro=Number(x.lucro)||0
+let taxas=Number(x.taxas)||0
+let irrf=Number(irrfPorMes[x.mes])||0
+return lucro-taxas-irrf
+})
+
+let coresResultado=[
+'#2563eb',
 '#16a34a',
-'#22c55e',
-'#15803d',
-'#4ade80',
-'#166534',
-'#059669'
-]
-return verdes[i%verdes.length]
-}
-if(valor<0){
-let vermelhos=[
+'#f59e0b',
 '#dc2626',
-'#ef4444',
-'#b91c1c',
-'#f87171',
-'#991b1b',
-'#e11d48'
+'#7c3aed',
+'#0891b2',
+'#ea580c',
+'#db2777',
+'#4f46e5',
+'#65a30d',
+'#0d9488',
+'#9333ea'
 ]
-return vermelhos[i%vermelhos.length]
-}
-return '#94a3b8'
-})
+
 let canvasResultado=document.getElementById('grafResultado')
+
 if(canvasResultado){
-window.grafResultadoObj=new Chart(canvasResultado,{
+
+CHART1=new Chart(canvasResultado,{
 type:'bar',
+
 data:{
 labels:labelsResultado,
 datasets:[{
-label:'Resultado após Taxas + IRRF',
+label:'Resultado líquido',
 data:valoresResultado,
-backgroundColor:coresResultado,
-borderColor:coresResultado,
-borderWidth:1,
-borderRadius:7,
+backgroundColor:valoresResultado.map((_,i)=>coresResultado[i%coresResultado.length]),
+borderWidth:0,
+borderRadius:8,
 borderSkipped:false,
 barPercentage:.72,
 categoryPercentage:.78
 }]
 },
+
 options:{
 indexAxis:'y',
 responsive:true,
 maintainAspectRatio:false,
+
 animation:{
-duration:700
+duration:600
 },
-interaction:{
-mode:'nearest',
-axis:'y',
-intersect:false
-},
+
 layout:{
 padding:{
 top:8,
-right:65,
+right:20,
 bottom:5,
 left:5
 }
 },
+
 plugins:{
 legend:{
 display:false
 },
+
 tooltip:{
 callbacks:{
 label:function(context){
-return ' '+moeda(Number(context.raw||0))
+return brl(context.raw)
 }
-}
-},
-datalabels:{
-display:true,
-anchor:function(context){
-return Number(context.dataset.data[context.dataIndex]||0)>=0?'end':'start'
-},
-align:function(context){
-return Number(context.dataset.data[context.dataIndex]||0)>=0?'right':'left'
-},
-offset:5,
-clamp:true,
-clip:false,
-color:function(context){
-let valor=Number(context.dataset.data[context.dataIndex]||0)
-if(valor>0)return '#15803d'
-if(valor<0)return '#dc2626'
-return '#64748b'
-},
-font:{
-size:10,
-weight:'800'
-},
-formatter:function(valor){
-return moeda(valor)
 }
 }
 },
+
 scales:{
 x:{
 beginAtZero:true,
+
 grid:{
-color:'#e2e8f0',
-drawBorder:false
+color:'#e2e8f0'
 },
+
 border:{
 display:false
 },
+
 ticks:{
 color:'#64748b',
 font:{
 size:10
 },
+
 callback:function(value){
-let n=Number(value||0)
-if(Math.abs(n)>=1000000)return 'R$ '+(n/1000000).toFixed(1).replace('.',',')+' mi'
-if(Math.abs(n)>=1000)return 'R$ '+(n/1000).toFixed(1).replace('.',',')+' mil'
+let n=Number(value)||0
+
+if(Math.abs(n)>=1000000){
+return 'R$ '+(n/1000000).toFixed(1).replace('.',',')+' mi'
+}
+
+if(Math.abs(n)>=1000){
+return 'R$ '+(n/1000).toFixed(1).replace('.',',')+' mil'
+}
+
 return 'R$ '+n.toLocaleString('pt-BR')
 }
 }
 },
+
 y:{
 grid:{
 display:false
 },
+
 border:{
 display:false
 },
+
 ticks:{
 color:'#334155',
+
 font:{
 size:11,
 weight:'700'
@@ -785,21 +782,23 @@ weight:'700'
 }
 }
 }
-},
-plugins:[ChartDataLabels]
+}
 })
 }
+
 /*=========================================================
-GRÁFICO 2 - CAPITAL INVESTIDO POR ATIVO EM PIZZA
+GRÁFICO 2 - CAPITAL INVESTIDO POR ATIVO
 =========================================================*/
-let carteira=(CALC.carteira||[]).filter(x=>Number(x.qtd||x.quantidade||0)>0)
-let labelsCarteira=carteira.map(x=>x.codigo||x.ativo||x.empresa||'Ativo')
-let valoresCarteira=carteira.map(x=>{
-let qtd=Number(x.qtd||x.quantidade||0)
-let medio=Number(x.precoMedio||x.preco_medio||x.pm||0)
-let custo=Number(x.custoAtual||x.custo_atual||0)
-return custo>0?custo:qtd*medio
+let carteira=(CALC.carteira||[])
+.filter(a=>Number(a.qtd)>0&&Number(a.custo)>0)
+.sort((a,b)=>Number(b.custo)-Number(a.custo))
+
+let labelsCarteira=carteira.map(a=>a.codigo)
+
+let valoresCarteira=carteira.map(a=>{
+return Number(a.custo)||0
 })
+
 let paletaCarteira=[
 '#2563eb',
 '#16a34a',
@@ -822,58 +821,85 @@ let paletaCarteira=[
 '#0369a1',
 '#84cc16'
 ]
-let coresCarteira=labelsCarteira.map((_,i)=>paletaCarteira[i%paletaCarteira.length])
+
 let canvasCarteira=document.getElementById('grafCarteira')
+
 if(canvasCarteira){
-window.grafCarteiraObj=new Chart(canvasCarteira,{
-type:'doughnut',
+
+CHART2=new Chart(canvasCarteira,{
+type:'pie',
+
 data:{
 labels:labelsCarteira,
+
 datasets:[{
 data:valoresCarteira,
-backgroundColor:coresCarteira,
+backgroundColor:labelsCarteira.map((_,i)=>{
+return paletaCarteira[i%paletaCarteira.length]
+}),
 borderColor:'#ffffff',
-borderWidth:3,
-hoverBorderWidth:4,
-hoverOffset:8
+borderWidth:2,
+hoverBorderWidth:3,
+hoverOffset:7
 }]
 },
+
 options:{
 responsive:true,
 maintainAspectRatio:false,
-cutout:'54%',
+
 animation:{
 animateRotate:true,
 animateScale:true,
-duration:800
+duration:700
 },
+
 layout:{
 padding:8
 },
+
 plugins:{
 legend:{
 display:true,
 position:'right',
+
 labels:{
 usePointStyle:true,
 pointStyle:'circle',
 boxWidth:9,
 boxHeight:9,
-padding:12,
+padding:11,
 color:'#334155',
+
 font:{
 size:10,
 weight:'700'
 },
+
 generateLabels:function(chart){
+
 let data=chart.data
-if(!data.labels.length)return[]
-let total=data.datasets[0].data.reduce((s,v)=>s+Number(v||0),0)
+
+if(!data.labels||!data.labels.length){
+return[]
+}
+
+let valores=data.datasets[0].data
+
+let total=valores.reduce((s,v)=>{
+return s+(Number(v)||0)
+},0)
+
 return data.labels.map((label,i)=>{
-let valor=Number(data.datasets[0].data[i]||0)
-let percentual=total>0?(valor/total)*100:0
+
+let valor=Number(valores[i])||0
+
+let percentual=total>0
+?(valor/total)*100
+:0
+
 return{
-text:label+' • '+percentual.toFixed(1).replace('.',',')+'%',
+text:label+'  '+percentual.toFixed(1).replace('.',',')+'%',
 fillStyle:data.datasets[0].backgroundColor[i],
 strokeStyle:data.datasets[0].backgroundColor[i],
 lineWidth:0,
@@ -881,44 +907,37 @@ hidden:false,
 index:i,
 pointStyle:'circle'
 }
+
 })
 }
 }
 },
+
 tooltip:{
 callbacks:{
 label:function(context){
-let valor=Number(context.raw||0)
-let total=context.dataset.data.reduce((s,v)=>s+Number(v||0),0)
-let percentual=total>0?(valor/total)*100:0
-return ' '+context.label+': '+moeda(valor)+' ('+percentual.toFixed(1).replace('.',',')+'%)'
-}
-}
-},
-datalabels:{
-display:function(context){
-let valores=context.dataset.data
-let total=valores.reduce((s,v)=>s+Number(v||0),0)
-let valor=Number(valores[context.dataIndex]||0)
-let percentual=total>0?(valor/total)*100:0
-return percentual>=4
-},
-color:'#ffffff',
-font:{
-size:10,
-weight:'900'
-},
-textStrokeColor:'rgba(15,23,42,.35)',
-textStrokeWidth:2,
-formatter:function(valor,context){
-let total=context.dataset.data.reduce((s,v)=>s+Number(v||0),0)
-let percentual=total>0?(Number(valor||0)/total)*100:0
-return percentual.toFixed(1).replace('.',',')+'%'
+
+let valor=Number(context.raw)||0
+
+let total=context.dataset.data.reduce((s,v)=>{
+return s+(Number(v)||0)
+},0)
+
+let percentual=total>0
+?(valor/total)*100
+:0
+
+return context.label+
+': '+
+brl(valor)+
+' • '+
+percentual.toFixed(1).replace('.',',')+
+'%'
 }
 }
 }
-},
-plugins:[ChartDataLabels]
+}
+}
 })
 }
 }
