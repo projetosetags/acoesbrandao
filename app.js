@@ -12,7 +12,16 @@ let VALORES_VISIVEIS=false
 const brl=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const num=v=>(Number(v)||0).toLocaleString('pt-BR',{maximumFractionDigits:2})
 const dataBR=s=>s?String(s).slice(0,10).split('-').reverse().join('/'):'—'
-const mesBR=s=>new Date(s+'T12:00:00').toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})
+/*=========================================================
+FORMATAÇÃO DO MÊS - AGOSTO/2026
+=========================================================*/
+const mesBR=s=>{
+if(!s)return'—'
+let data=new Date(s+'T12:00:00')
+let mes=data.toLocaleDateString('pt-BR',{month:'long'})
+let ano=data.getFullYear()
+return mes.charAt(0).toUpperCase()+mes.slice(1)+'/'+ano
+}
 function hoje(){
 return new Date().toISOString().slice(0,10)
 }
