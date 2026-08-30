@@ -407,18 +407,21 @@ PAINEL/RESUMO
 ========================================================= -->
 <section id="painel" class="aba ativa">
 <!-- =========================================================
-RELATÓRIO PERSONALIZADO PDF
+RELATÓRIO PERSONALIZADO PDF E BACKUP EXCEL
 ========================================================= -->
 <div class="card relatorio-pdf-card">
 <div class="relatorio-pdf-topo">
 <div class="relatorio-pdf-titulo">
 <span class="relatorio-pdf-icone">📄</span>
 <div>
-<h3>Relatório personalizado em PDF</h3>
-<p>Escolha o conteúdo, o período e as ações que deseja incluir no relatório.</p>
+<h3>Relatório personalizado e Backup</h3>
+<p>Escolha o conteúdo do relatório ou faça o backup completo dos dados em Excel.</p>
 </div>
 </div>
+<div class="backup-acoes">
+<button class="btn btn-backup" type="button" onclick="gerarBackupExcel()">⬇ Backup Excel</button>
 <button class="btn btn-gerar-pdf" type="button" onclick="exportarPDFSelecionado()">📄 Gerar PDF</button>
+</div>
 </div>
 <div class="relatorio-pdf-grid">
 <!-- =========================================================
@@ -698,12 +701,6 @@ IRRF
 </div>
   
 </section>
-<!-- =========================================================
-excel
-========================================================= -->
-<div class="backup-acoes">
-<button class="btn btn-backup" type="button" onclick="gerarBackupExcel()">⬇ Backup Excel</button>
-</div>
 
   
 </main>
