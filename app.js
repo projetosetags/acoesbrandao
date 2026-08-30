@@ -1232,6 +1232,114 @@ return total+(Number(t.irrf)||0)
 },0)
 }
 /*=========================================================
+026 TOTAL DE IRRF
+=========================================================*/
+function calcularTotalIRRF(){
+return TAXAS.reduce((total,t)=>{
+return total+(Number(t.irrf)||0)
+},0)
+}
+/*=========================================================
+026.1 BACKUP COMPLETO EM EXCEL
+=========================================================*/
+function gerarBackupExcel(){
+try{
+if(typeof XLSX==='undefined'){
+alert('Biblioteca do Excel não foi carregada.')
+return
+}
+if(!CALC){
+alert('Aguarde o carregamento dos dados.')
+return
+}
+let wb=XLSX.utils.book_new()
+let operacoes=(OPERACOES||[]).map(o=>({
+ID:o.id||'',
+Data:dataBR(o.data),
+Empresa:o.empresa||'',
+Código:o.codigo||'',
+Tipo:o.tipo||'',
+Quantidade:Number(o.quantidade)||0,
+'Preço Unitário':Number(o.preco_unitario)||0,
+'Valor Bruto':Number(o.valor_bruto)||((Number(o.quantidade)||0)*(Number(o.preco_unitario)||0))
+}))
+let wsOperacoes=XLSX.utils.json_to_sheet(operacoes)
+XLSX.utils.book_append_sheet(wb,wsOperacoes,'Operações')
+let carteira=(CALC.carteira||[]).map(a=>({
+Empresa:a.empresa||'',
+Código:a.codigo||'',
+'Qtd. Atual':Number(a.qtd)||0,
+'Custo Atual':Number(a.custo)||0,
+'Preço Médio':Number(a.pm)||0,
+'Lucro/Prejuízo Realizado':Number(a.realizado)||0,
+Operações:Number(a.operacoes)||0
+}))
+let wsCarteira=XLSX.utils.json_to_sheet(carteira)
+XLSX.utils.book_append_sheet(wb,wsCarteira,'Carteira')
+let irrfPorMes={}
+TAXAS.forEach(t=>{
+let mes=String(t.data||'').slice(0,7)
+if(!mes)return
+irrfPorMes[mes]=(irrfPorMes[mes]||0)+(Number(t.irrf)||0)
+})
+let resultados=(CALC.mensal||[]).map(x=>{
+let irrf=Number(irrfPorMes[x.mes])||0
+let resultadoFinal=(Number(x.lucro)||0)-(Number(x.taxas)||0)-irrf
+return{
+Mês:mesBR(x.mes+'-01'),
+Compras:Number(x.compras)||0,
+Vendas:Number(x.vendas)||0,
+'Resultado Bruto':Number(x.lucro)||0,
+Taxas:Number(x.taxas)||0,
+IRRF:irrf,
+'Resultado após Taxas + IRRF':resultadoFinal
+}
+})
+let wsResultados=XLSX.utils.json_to_sheet(resultados)
+XLSX.utils.book_append_sheet(wb,wsResultados,'Resultados')
+let taxas=(TAXAS||[]).map(t=>({
+ID:t.id||'',
+Data:dataBR(t.data),
+'Taxa de Liquidação':Number(t.taxa_liquidacao)||0,
+'Taxa de Negociação':Number(t.taxa_negociacao)||0,
+'Total de Taxas':(Number(t.taxa_liquidacao)||0)+(Number(t.taxa_negociacao)||0)
+}))
+let wsTaxas=XLSX.utils.json_to_sheet(taxas)
+XLSX.utils.book_append_sheet(wb,wsTaxas,'Taxas')
+let irrf=(TAXAS||[]).filter(t=>(Number(t.irrf)||0)!==0).map(t=>({
+ID:t.id||'',
+Data:dataBR(t.data),
+IRRF:Number(t.irrf)||0
+}))
+let wsIRRF=XLSX.utils.json_to_sheet(irrf)
+XLSX.utils.book_append_sheet(wb,wsIRRF,'IRRF')
+let resumo=[{
+'Data do Backup':new Date().toLocaleString('pt-BR'),
+'Valor Investido':Number(CALC.investido)||0,
+'Ações/Cotas':Number(CALC.qtd)||0,
+'Lucro/Prejuízo Acumulado':Number(CALC.realizado)||0,
+Taxas:Number(CALC.taxasTotal)||0,
+IRRF:Number(calcularTotalIRRF())||0,
+Compras:Number(CALC.compras)||0,
+Vendas:Number(CALC.vendas)||0
+}]
+let wsResumo=XLSX.utils.json_to_sheet(resumo)
+XLSX.utils.book_append_sheet(wb,wsResumo,'Resumo')
+let agora=new Date()
+let ano=agora.getFullYear()
+let mes=String(agora.getMonth()+1).padStart(2,'0')
+let dia=String(agora.getDate()).padStart(2,'0')
+let hora=String(agora.getHours()).padStart(2,'0')
+let minuto=String(agora.getMinutes()).padStart(2,'0')
+let arquivo=`Backup_Acoes_Nemesio_${ano}-${mes}-${dia}_${hora}-${minuto}.xlsx`
+XLSX.writeFile(wb,arquivo)
+avisar('Backup Excel gerado com sucesso')
+}catch(e){
+console.error('Erro ao gerar backup Excel:',e)
+alert('Não foi possível gerar o backup Excel.')
+}
+}
+/*=========================================================
 027 OBTER PAINÉIS SELECIONADOS PARA PDF
 =========================================================*/
 function obterPaineisPDFSelecionados(){
@@ -2294,6 +2402,7 @@ setTimeout(redimensionarGraficos,100)
 botao.dataset.listenerResize='1'
 })
 }
+
 /*=========================================================
 056 INICIALIZAÇÃO
 =========================================================*/
