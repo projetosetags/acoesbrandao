@@ -374,6 +374,13 @@ td{padding:10px 11px;border-bottom:1px solid #f1f5f9;white-space:nowrap}
 .pdf-resumo-item:nth-child(3){grid-column:auto}
 .btn-gerar-pdf-mobile{grid-column:auto}
 }
+/*=========================================================
+BACKUP EXCEL
+=========================================================*/
+.backup-acoes{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.btn-backup{background:#15803d;color:#fff;border:1px solid #15803d;font-weight:800;white-space:nowrap}
+.btn-backup:hover{background:#166534;border-color:#166534}
+  
 </style>
 
 
@@ -689,9 +696,18 @@ IRRF
 <h3>IRRF registrado</h3>
 <div id="tabelaIRRF"></div>
 </div>
+  
 </section>
+<!-- =========================================================
+excel
+========================================================= -->
+<div class="backup-acoes">
+<button class="btn btn-backup" type="button" onclick="gerarBackupExcel()">⬇ Backup Excel</button>
+</div>
 
+  
 </main>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="./app.js?v=20260825-1"></script>
 </body>
 </html>
